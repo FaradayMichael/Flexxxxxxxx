@@ -14,6 +14,11 @@ public class GameMap {
      */
     public int[][] map1;
     public int[][] map2;
+    
+    public int singleDeck = 0;
+    public int twoDeck = 0;
+    public int threeDeck = 0;
+    public int fourDeck = 0;
 
 
     public GameMap(final int mapWidth, final int mapHeight) {
