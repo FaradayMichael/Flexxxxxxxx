@@ -57,16 +57,18 @@ public class BattleFieldComponent extends JPanel {
         JPanel jp = getClickedPane(e);
         if (jp != null) {
             if (e.getButton() == MouseEvent.BUTTON1) {
-                int i = getI(e);
-                int j = getJ(e);
-                
-                jp.setBackground(Color.DARK_GRAY);
-                gm.map1[i][j] = 1;
-                gm.checkShips();
-                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four"+gm.fourDeck+"\n");
+                System.out.println(getI(e)+" "+getJ(e));
+                if (checkPaintPane(getI(e), getJ(e))) {
+                    jp.setBackground(Color.DARK_GRAY);
+                    gm.map1[getI(e)][getJ(e)] = 1;
+                    gm.checkShips();
+                }
+                //System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four"+gm.fourDeck+"\n");
 
             } else if (e.getButton() == MouseEvent.BUTTON3) {
                 jp.setBackground(Color.WHITE);
+                gm.map1[getI(e)][getJ(e)] = 0;
+                gm.checkShips();
             }
         }
     }
@@ -111,7 +113,820 @@ public class BattleFieldComponent extends JPanel {
         return 500;
     }
     
-    
+   private boolean checkPaintPane(int x, int y){
+       if(x==0 && y==0){
+           if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y + 1] == 0) {
+               if (gm.singleDeck < 4) {
+                   gm.singleDeck++;
+                   return true;
+               } else {
+                   return false;
+               }
+           } else {
+               if (gm.map1[x + 1][y + 1] == 1) {
+                   return false;
+               } else {
+                   if (gm.map1[x + 1][y] == 1) {
+                       int tmp = x + 1;
+                       int shipSize = 1;
+                       while (gm.map1[tmp][y] == 1) {
+                           tmp++;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   } else if (gm.map1[x][y + 1] == 1) {
+                       int tmp = y + 1;
+                       int shipSize = 1;
+                       while (gm.map1[x][tmp] == 1) {
+                           tmp++;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   }
+               }
+           }
+       } else if (x == 9 && y == 0) {
+           if (gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0) {
+               if (gm.singleDeck < 4) {
+                   gm.singleDeck++;
+                   return true;
+               } else {
+                   return false;
+               }
+           } else {
+               if (gm.map1[x - 1][y + 1] == 1) {
+                   return false;
+               } else {
+                   if (gm.map1[x - 1][y] == 1) {
+                       int tmp = x - 1;
+                       int shipSize = 1;
+                       while (gm.map1[tmp][y] == 1) {
+                           tmp--;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   } else if (gm.map1[x][y + 1] == 1) {
+                       int tmp = y + 1;
+                       int shipSize = 1;
+                       while (gm.map1[x][tmp] == 1) {
+                           tmp++;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   }
+               }
+           }
+       } else if(x==0 && y==9){
+           if (gm.map1[x + 1][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y - 1] == 0) {
+               if (gm.singleDeck < 4) {
+                   gm.singleDeck++;
+                   return true;
+               } else {
+                   return false;
+               }
+           } else {
+               if (gm.map1[x + 1][y - 1] == 1) {
+                   return false;
+               } else {
+                   if (gm.map1[x + 1][y] == 1) {
+                       int tmp = x + 1;
+                       int shipSize = 1;
+                       while (gm.map1[tmp][y] == 1) {
+                           tmp++;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   } else if (gm.map1[x][y - 1] == 1) {
+                       int tmp = y - 1;
+                       int shipSize = 1;
+                       while (gm.map1[x][tmp] == 1) {
+                           tmp--;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   }
+               }
+           }
+       } else if(x==9 && y==9){
+           if (gm.map1[x - 1][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0) {
+               if (gm.singleDeck < 4) {
+                   gm.singleDeck++;
+                   return true;
+               } else {
+                   return false;
+               }
+           } else {
+               if (gm.map1[x - 1][y - 1] == 1) {
+                   return false;
+               } else {
+                   if (gm.map1[x - 1][y] == 1) {
+                       int tmp = x - 1;
+                       int shipSize = 1;
+                       while (gm.map1[tmp][y] == 1) {
+                           tmp--;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   } else if (gm.map1[x][y - 1] == 1) {
+                       int tmp = y - 1;
+                       int shipSize = 1;
+                       while (gm.map1[x][tmp] == 1) {
+                           tmp--;
+                           shipSize++;
+                       }
+                       if (shipSize > 4) {
+                           return false;
+                       }
+                       switch (shipSize) {
+                           case 2:
+                               if (gm.twoDeck < 3) {
+                                   gm.twoDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 3:
+                               if (gm.threeDeck < 2) {
+                                   gm.threeDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                           case 4:
+                               if (gm.fourDeck < 1) {
+                                   gm.fourDeck++;
+                                   return true;
+                               } else {
+                                   return false;
+                               }
+                       }
+                   }
+               }
+           }
+       } else {
+           if (x == 0) {
+               if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y - 1] == 0) {
+                   if (gm.singleDeck < 4) {
+                       gm.singleDeck++;
+                       return true;
+                   } else {
+                       return false;
+                   }
+               } else {
+                   if(gm.map1[x + 1][y + 1] == 1 || gm.map1[x + 1][y - 1] == 1){
+                       return false;
+                   } else {
+                       if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
+                           int tmp = y + 1;
+                           int shipSize = 1;
+                           while (gm.map1[x][tmp] == 1) {
+                               tmp++;
+                               shipSize++;
+                               if(tmp>9){
+                                   break;
+                               }
+                           }
+                           tmp=y-1;
+                           while (gm.map1[x][tmp] == 1) {
+                               tmp--;
+                               shipSize++;
+                               if (tmp < 0) {
+                                   break;
+                               }
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       } else if (gm.map1[x][y] == 1 && gm.map1[x + 1][y] == 1) {
+                           int tmp = x + 1;
+                           int shipSize = 1;
+                           while (gm.map1[tmp][y] == 1) {
+                               tmp++;
+                               shipSize++;
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       }
+                   }
+               }
+           } else if (x == 9) {
+               if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
+                   if (gm.singleDeck < 4) {
+                       gm.singleDeck++;
+                       return true;
+                   } else {
+                       return false;
+                   }
+               } else {
+                   if (gm.map1[x - 1][y + 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
+                       return false;
+                   } else {
+                       if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
+                           int tmp = y + 1;
+                           int shipSize = 1;
+                           while (gm.map1[x][tmp] == 1) {
+                               tmp++;
+                               shipSize++;
+                               if (tmp > 9) {
+                                   break;
+                               }
+                           }
+                           tmp = y - 1;
+                           while (gm.map1[x][tmp] == 1) {
+                               tmp--;
+                               shipSize++;
+                               if (tmp < 0) {
+                                   break;
+                               }
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       } else if (gm.map1[x][y] == 1 && gm.map1[x - 1][y] == 1) {
+                           int tmp = x - 1;
+                           int shipSize = 1;
+                           while (gm.map1[tmp][y] == 1) {
+                               tmp--;
+                               shipSize++;
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       }
+                   }
+               }
+           } else if (y == 0) {
+               if (gm.map1[x+1][y] == 0 && gm.map1[x-1][y] == 0 && gm.map1[x][y+1] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x - 1][y + 1] == 0) {
+                   if (gm.singleDeck < 4) {
+                       gm.singleDeck++;
+                       return true;
+                   } else {
+                       return false;
+                   }
+               } else {
+                   if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x - 1][y + 1] == 1) {
+                       return false;
+                   } else {
+                       if (gm.map1[x+1][y] == 1 || gm.map1[x-1][y] == 1) {
+                           int tmp = x + 1;
+                           int shipSize = 1;
+                           while (gm.map1[tmp][y] == 1) {
+                               tmp++;
+                               shipSize++;
+                               if (tmp > 9) {
+                                   break;
+                               }
+                           }
+                           tmp = x - 1;
+                           while (gm.map1[tmp][y] == 1) {
+                               tmp--;
+                               shipSize++;
+                               if (tmp < 0) {
+                                   break;
+                               }
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       } else if (gm.map1[x][y] == 1 && gm.map1[x][y+1] == 1) {
+                           int tmp = y + 1;
+                           int shipSize = 1;
+                           while (gm.map1[x][tmp] == 1) {
+                               tmp++;
+                               shipSize++;
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       }
+                   }
+               }
+           } else if(y==9){
+               if (gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y - 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
+                   if (gm.singleDeck < 4) {
+                       gm.singleDeck++;
+                       return true;
+                   } else {
+                       return false;
+                   }
+               } else {
+                   if (gm.map1[x + 1][y - 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
+                       return false;
+                   } else {
+                       if (gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) {
+                           int tmp = x + 1;
+                           int shipSize = 1;
+                           while (gm.map1[tmp][y] == 1) {
+                               tmp++;
+                               shipSize++;
+                               if (tmp > 9) {
+                                   break;
+                               }
+                           }
+                           tmp = x - 1;
+                           while (gm.map1[tmp][y] == 1) {
+                               tmp--;
+                               shipSize++;
+                               if (tmp < 0) {
+                                   break;
+                               }
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       } else if (gm.map1[x][y] == 1 && gm.map1[x][y - 1] == 1) {
+                           int tmp = y - 1;
+                           int shipSize = 1;
+                           while (gm.map1[x][tmp] == 1) {
+                               tmp--;
+                               shipSize++;
+                           }
+                           if (shipSize > 4) {
+                               return false;
+                           }
+                           switch (shipSize) {
+                               case 2:
+                                   if (gm.twoDeck < 3) {
+                                       gm.twoDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 3:
+                                   if (gm.threeDeck < 2) {
+                                       gm.threeDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                               case 4:
+                                   if (gm.fourDeck < 1) {
+                                       gm.fourDeck++;
+                                       return true;
+                                   } else {
+                                       return false;
+                                   }
+                           }
+                       }
+                   }
+               }
+           } else {
+               if(gm.map1[x+1][y+1]==0 && gm.map1[x+1][y-1]==0 && gm.map1[x+1][y]==0 && gm.map1[x-1][y+1]==0 && gm.map1[x-1][y-1]==0 && gm.map1[x-1][y]==0 && gm.map1[x][y+1]==0 && gm.map1[x][y-1]==0){
+                   if (gm.singleDeck < 4) {
+                       gm.singleDeck++;
+                       return true;
+                   } else {
+                       return false;
+                   }
+               } else{
+                   if(gm.map1[x+1][y+1]==1 || gm.map1[x-1][y+1]==1 || gm.map1[x+1][y-1]==1 || gm.map1[x-1][y-1]==1){
+                       return false;
+                   } else {
+                       if ((gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) || (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1)) {
+                           if (gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) {
+                               int tmp = x + 1;
+                               int shipSize = 1;
+                               while (gm.map1[tmp][y] == 1) {
+                                   tmp++;
+                                   shipSize++;
+                                   if (tmp > 9) {
+                                       break;
+                                   }
+                               }
+                               tmp = x - 1;
+                               while (gm.map1[tmp][y] == 1) {
+                                   tmp--;
+                                   shipSize++;
+                                   if (tmp < 0) {
+                                       break;
+                                       
+                                   }
+                               }
+                               if (shipSize > 4) {
+                                   return false;
+                               }
+                               switch (shipSize) {
+                                   case 2:
+                                       if (gm.twoDeck < 3) {
+                                           gm.twoDeck++;
+                                           return true;
+                                       } else {
+                                           return false;
+                                       }
+                                   case 3:
+                                       if (gm.threeDeck < 2) {
+                                           gm.threeDeck++;
+                                           return true;
+                                       } else {
+                                           return false;
+                                       }
+                                   case 4:
+                                       if (gm.fourDeck < 1) {
+                                           gm.fourDeck++;
+                                           return true;
+                                       } else {
+                                           return false;
+                                       }
+                               }
+                           } else if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
+                               int tmp = y + 1;
+                               int shipSize = 1;
+                               while (gm.map1[x][tmp] == 1) {
+                                   tmp++;
+                                   shipSize++;
+                                   if (tmp > 9) {
+                                       break;
+                                   }
+                               }
+                               tmp = y - 1;
+                               while (gm.map1[x][tmp] == 1) {
+                                   tmp--;
+                                   shipSize++;
+                                   if (tmp < 0) {
+                                       break;
+                                   }
+                               }
+                               if (shipSize > 4) {
+                                   return false;
+                               }
+                               switch (shipSize) {
+                                   case 2:
+                                       if (gm.twoDeck < 3) {
+                                           gm.twoDeck++;
+                                           return true;
+                                       } else {
+                                           return false;
+                                       }
+                                   case 3:
+                                       if (gm.threeDeck < 2) {
+                                           gm.threeDeck++;
+                                           return true;
+                                       } else {
+                                           return false;
+                                       }
+                                   case 4:
+                                       if (gm.fourDeck < 1) {
+                                           gm.fourDeck++;
+                                           return true;
+                                       } else {
+                                           return false;
+                                       }
+                               }
+                           }
+                       }
+                   }
+               }
+           }
+       }
+
+       
+       
+       
+       
+       
+       
+       
+       
+       ////////////////////////////////////////////////////////////////
+       return false;
+   }
    
         
 
