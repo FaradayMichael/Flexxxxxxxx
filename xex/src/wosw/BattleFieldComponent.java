@@ -57,18 +57,18 @@ public class BattleFieldComponent extends JPanel {
         JPanel jp = getClickedPane(e);
         if (jp != null) {
             if (e.getButton() == MouseEvent.BUTTON1) {
-                System.out.println(getI(e)+" "+getJ(e));
                 if (checkPaintPane(getI(e), getJ(e))) {
                     jp.setBackground(Color.DARK_GRAY);
                     gm.map1[getI(e)][getJ(e)] = 1;
                     gm.checkShips();
                 }
-                //System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four"+gm.fourDeck+"\n");
+                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four"+gm.fourDeck+"\n");
 
             } else if (e.getButton() == MouseEvent.BUTTON3) {
                 jp.setBackground(Color.WHITE);
                 gm.map1[getI(e)][getJ(e)] = 0;
                 gm.checkShips();
+                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four"+gm.fourDeck+"\n");
             }
         }
     }
@@ -78,7 +78,6 @@ public class BattleFieldComponent extends JPanel {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
 
-        // Проверяем, что курсор находится в рабочей области
         boolean clickedInWorkspace = x >= 0 && y >= 0 && x < componentWidth && y < componentHeight;
 
         if (clickedInWorkspace) {
@@ -91,7 +90,6 @@ public class BattleFieldComponent extends JPanel {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
 
-        
         boolean clickedInWorkspace = x >= 0 && y >= 0 && x < componentWidth && y < componentHeight;
 
         if (clickedInWorkspace) {
@@ -103,8 +101,7 @@ public class BattleFieldComponent extends JPanel {
     private int getJ(MouseEvent e) {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
-
-       
+ 
         boolean clickedInWorkspace = x >= 0 && y >= 0 && x < componentWidth && y < componentHeight;
 
         if (clickedInWorkspace) {
@@ -495,7 +492,7 @@ public class BattleFieldComponent extends JPanel {
                                        return false;
                                    }
                            }
-                       } else if (gm.map1[x][y] == 1 && gm.map1[x + 1][y] == 1) {
+                       } else if (gm.map1[x + 1][y] == 1) {
                            int tmp = x + 1;
                            int shipSize = 1;
                            while (gm.map1[tmp][y] == 1) {
@@ -587,7 +584,7 @@ public class BattleFieldComponent extends JPanel {
                                        return false;
                                    }
                            }
-                       } else if (gm.map1[x][y] == 1 && gm.map1[x - 1][y] == 1) {
+                       } else if (gm.map1[x - 1][y] == 1) {
                            int tmp = x - 1;
                            int shipSize = 1;
                            while (gm.map1[tmp][y] == 1) {
@@ -679,7 +676,7 @@ public class BattleFieldComponent extends JPanel {
                                        return false;
                                    }
                            }
-                       } else if (gm.map1[x][y] == 1 && gm.map1[x][y+1] == 1) {
+                       } else if (gm.map1[x][y+1] == 1) {
                            int tmp = y + 1;
                            int shipSize = 1;
                            while (gm.map1[x][tmp] == 1) {
@@ -771,7 +768,7 @@ public class BattleFieldComponent extends JPanel {
                                        return false;
                                    }
                            }
-                       } else if (gm.map1[x][y] == 1 && gm.map1[x][y - 1] == 1) {
+                       } else if (gm.map1[x][y - 1] == 1) {
                            int tmp = y - 1;
                            int shipSize = 1;
                            while (gm.map1[x][tmp] == 1) {
@@ -915,26 +912,8 @@ public class BattleFieldComponent extends JPanel {
                }
            }
        }
-
-       
-       
-       
-       
-       
-       
-       
-       
-       ////////////////////////////////////////////////////////////////
        return false;
    }
    
-        
-
-    //TODO: написать метод проверяющий возможность закрашивания ячейки. Тоесть у нас может быть корабли
-    //TODO: 1 четырёхпалубный
-    //TODO: 2 трёхпалубных
-    //TODO: 3 двухпалубных
-    //TODO: 4 однопалубных
-    //TODO: Нужно чтобы не было возможность создавать не правильные корабли (загзагом, больше положенного) и т.д
 
 }
