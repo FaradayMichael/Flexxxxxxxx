@@ -62,13 +62,13 @@ public class BattleFieldComponent extends JPanel {
                     gm.map1[getI(e)][getJ(e)] = 1;
                     gm.checkShips();
                 }
-                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four"+gm.fourDeck+"\n");
+                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four "+gm.fourDeck+"\n");
 
             } else if (e.getButton() == MouseEvent.BUTTON3) {
                 jp.setBackground(Color.WHITE);
                 gm.map1[getI(e)][getJ(e)] = 0;
                 gm.checkShips();
-                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four"+gm.fourDeck+"\n");
+                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four "+gm.fourDeck+"\n");
             }
         }
     }
