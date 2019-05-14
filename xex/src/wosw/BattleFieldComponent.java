@@ -6,10 +6,14 @@ import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import static wosw.GameMap.fourDeck;
-import static wosw.GameMap.singleDeck;
-import static wosw.GameMap.threeDeck;
-import static wosw.GameMap.twoDeck;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -22,12 +26,25 @@ public class BattleFieldComponent extends JPanel {
     private int componentHeight;
     private GameMap gm;
     private JPanel[][] cells;
+    private JPanel[][] otherCells;
+    
+    private boolean startGame;
+    private boolean yourTurn;
+    
+    private int serverPort;
+    private String address;
+    private Socket socket;
+    private ObjectOutputStream os;
+    private ObjectInputStream in;
+    
 
 
-    public BattleFieldComponent(int rowCount, int columnCount, int fieldWidth, int fieldHeight) {
+    public BattleFieldComponent(GameMap gm1, int fieldWidth, int fieldHeight) {
+        gm = gm1;
+        startGame = false;
+        int rowCount = gm.MAP_WIDTH;
+        int columnCount = gm.MAP_HEIGHT;
         setLayout(new GridLayout(rowCount, columnCount));
-
-        gm = new GameMap(rowCount, columnCount);
         
         this.componentWidth = fieldWidth;
         this.componentHeight = fieldHeight;
@@ -53,49 +70,110 @@ public class BattleFieldComponent extends JPanel {
 
         addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) { clickOnCell(e); }
+            public void mousePressed(MouseEvent e){
+                try { 
+                    clickOnCell(e);
+                } catch (IOException ex) {
+                    Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
         });
     }
 
-    private void clickOnCell(MouseEvent e) {
+    private void clickOnCell(MouseEvent e) throws IOException {
         JPanel jp = getClickedPane(e);
+        int x = getI(e);
+        int y = getJ(e);
         if (jp != null) {
             if (e.getButton() == MouseEvent.BUTTON1) {
-                if (checkPaintPane(getI(e), getJ(e))) {
-                    jp.setBackground(Color.DARK_GRAY);
-                    gm.map1[getI(e)][getJ(e)] = 1;
-                    gm.checkShips();
-                    paintAllBlack();
-                    if (GameMap.singleDeck > 4 || GameMap.twoDeck > 3 || GameMap.threeDeck > 2 || GameMap.fourDeck > 1) {
-                        paintShipsRed();
+                if (!startGame) {
+                    if (checkPaintPane(x, y)) {
+                        jp.setBackground(Color.DARK_GRAY);
+                        gm.map1[x][y] = 1;
+                        gm.checkShips();
+                        paintAllBlack();
+                        if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) {
+                            paintShipsRed();
+                        }
+                    }
+                    System.out.println("Single " + gm.singleDeck + "\n Two " + gm.twoDeck + "\n Three " + gm.threeDeck + "\n Four " + gm.fourDeck + "\n");
+                } else {
+                    if (yourTurn){
+                        int[] pos = new int[2];
+                        pos[0] = x;
+                        pos[1] = y;
+                        
+                        os.writeObject(pos);
+                        os.flush();
+                        
+                        boolean strike = in.readBoolean();
+                        if (strike){
+                            jp.setBackground(Color.red);
+                            gm.map2[x][y] = 2;
+                        }else{
+                            yourTurn = false;
+                        }
                     }
                 }
 
-//                jp.setBackground(Color.DARK_GRAY);
-//                gm.map1[getI(e)][getJ(e)] = 1;
-//                gm.checkShips();
-//                if(GameMap.singleDeck>4 || GameMap.twoDeck>3 || GameMap.threeDeck>2 || GameMap.fourDeck>1){
-//                    paintShipsRed();
-//                }
-               
-               
-                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four "+gm.fourDeck+"\n");
-
             } else if (e.getButton() == MouseEvent.BUTTON3) {
                 jp.setBackground(Color.WHITE);
-                gm.map1[getI(e)][getJ(e)] = 0;
+                gm.map1[x][y] = 0;
                 gm.checkShips();
                 paintAllBlack();
-                if (GameMap.singleDeck > 4 || GameMap.twoDeck > 3 || GameMap.threeDeck > 2 || GameMap.fourDeck > 1) {
+                if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) {
                     paintShipsRed();
+                    
                 }
                 System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four "+gm.fourDeck+"\n");
             }
         }
     }
 
+    public void startGame() throws UnknownHostException, IOException{
+        startGame = true;
+        
+        serverPort = 4545;
+        address = "192.168.0.4";
+        
+        InetAddress ipAddress = InetAddress.getByName(address);
+        socket = new Socket(ipAddress, serverPort);
+        
+        os = new ObjectOutputStream(socket.getOutputStream());
+        in = new ObjectInputStream(socket.getInputStream());
+        os.writeObject(gm);
+        os.flush();
+        yourTurn = in.readBoolean();
+        
+        new Thread(() -> {
+            
+            try {
+                while (true) {
+                    int[] s = (int[]) in.readObject();
+                    otherCells[s[0]][s[1]].setBackground(Color.red);
+                    gm.map1[s[0]][s[1]] = 2;
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
+    }
+    
+    public void setGm(GameMap f){
+        gm = f;
+    }
+    
+    public void setCells(JPanel[][] j){
+        otherCells = j;
+    }
+    
+    public JPanel[][] getCells(){
+        return cells;
+    }
+    
     private JPanel getClickedPane(MouseEvent e) {
-        // Из коорднат мышки вычетаем расстояния до первой ячейки
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
 
@@ -1298,4 +1376,8 @@ public class BattleFieldComponent extends JPanel {
             }
             }
         }
+    
+    public GameMap getGm(){
+        return gm;
+    }
     }

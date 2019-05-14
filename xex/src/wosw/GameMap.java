@@ -1,9 +1,11 @@
 package wosw;
 
+import java.io.Serializable;
+
 /**
  * @author Michael Faraday
  */
-public class GameMap {
+public class GameMap implements Serializable{
 
     public final int MAP_WIDTH;
     public final int MAP_HEIGHT;
@@ -11,16 +13,16 @@ public class GameMap {
     public int[][] map1;
     public int[][] map2;
 
-    public static int singleDeck = 0;
-    public static int twoDeck = 0;
-    public static int threeDeck = 0;
-    public static int fourDeck = 0;
+    public int singleDeck = 0;
+    public int twoDeck = 0;
+    public int threeDeck = 0;
+    public int fourDeck = 0;
 
     public GameMap(final int mapWidth, final int mapHeight) {
         this.MAP_WIDTH = mapWidth;
         this.MAP_HEIGHT = mapHeight;
         map1 = new int[MAP_WIDTH][MAP_WIDTH];
-        map2 = new int[MAP_WIDTH][MAP_WIDTH];
+        map2 = new int[MAP_WIDTH][MAP_WIDTH];;
     }
 
     public void checkShips() {
