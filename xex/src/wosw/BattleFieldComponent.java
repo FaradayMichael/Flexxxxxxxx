@@ -77,12 +77,14 @@ public class BattleFieldComponent extends JPanel {
                     clickOnCell(e);
                 } catch (IOException ex) {
                     Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
     }
 
-    private void clickOnCell(MouseEvent e) throws IOException {
+    private void clickOnCell(MouseEvent e) throws IOException, ClassNotFoundException {
         JPanel jp = getClickedPane(e);
         int x = getI(e);
         int y = getJ(e);
@@ -117,25 +119,7 @@ public class BattleFieldComponent extends JPanel {
                         } else {
                             yourTurn = strike;
                             jp.setBackground(Color.DARK_GRAY);
-                            
-                            new Thread(() -> {
-                                while (true){
-                                    try {
-                                        yourTurn = !in.readBoolean();
-                                        int[] s = (int[]) in.readObject();
-                                        if (!yourTurn){
-                                            otherCells[s[0]][s[1]].setBackground(Color.red);
-                                        } else{
-                                            otherCells[s[0]][s[1]].setBackground(Color.GREEN);
-                                            break;
-                                        }
-                                    } catch (IOException ex) {
-                                        Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
-                                    } catch (ClassNotFoundException ex) {
-                                        Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
-                                    }
-                                }
-                            }).start();
+                            waitEnemyTurn();
                         }
                     }
                 }
@@ -154,11 +138,11 @@ public class BattleFieldComponent extends JPanel {
         }
     }
 
-    public void startGame() throws UnknownHostException, IOException{
+    public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{
         System.out.println("wosw.BattleFieldComponent.startGame()");
         
         serverPort = 4545;
-        address = "192.168.0.12";
+        address = "192.168.0.11";
         
         InetAddress ipAddress = InetAddress.getByName(address);
         socket = new Socket(ipAddress, serverPort);
@@ -168,6 +152,9 @@ public class BattleFieldComponent extends JPanel {
         os.writeObject(gm);
         os.flush();
         yourTurn = in.readBoolean();
+        if(!yourTurn){
+            waitEnemyTurn();
+        }
         startGame = true;
 //        potok = new Thread(() -> {
 //            
@@ -186,6 +173,33 @@ public class BattleFieldComponent extends JPanel {
 //            }
 //        });
 //        potok.start();
+    }
+    
+    private void waitEnemyTurn() throws IOException, ClassNotFoundException{
+        new Thread(() -> {
+            while (true) {
+                try {
+                    boolean strike = in.readBoolean();
+                    int[] s = (int[]) in.readObject();
+                    
+                    if (strike) {
+                        yourTurn = !strike;
+                        otherCells[s[0]][s[1]].setBackground(Color.red);
+                    } else {
+                        yourTurn = !strike;
+                        otherCells[s[0]][s[1]].setBackground(Color.GREEN);
+                        break;
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
+                    Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
+            }
+
+        }).start();
+
     }
     
     public void setGm(GameMap f){
