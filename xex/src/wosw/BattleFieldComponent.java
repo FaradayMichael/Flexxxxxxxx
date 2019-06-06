@@ -21,15 +21,17 @@ import java.util.logging.Logger;
  */
 public class BattleFieldComponent extends JPanel {
 
-    private int cellSize;
-    private int componentWidth;
-    private int componentHeight;
+    public int cellSize;
+    public int componentWidth;
+    public int componentHeight;
     private GameMap gm;
-    private JPanel[][] cells;
+    public JPanel[][] cells;
     private JPanel[][] otherCells;
     
     private boolean startGame;
     private boolean yourTurn;
+    
+    private Thread potok;
     
     private int serverPort;
     private String address;
@@ -84,6 +86,7 @@ public class BattleFieldComponent extends JPanel {
         JPanel jp = getClickedPane(e);
         int x = getI(e);
         int y = getJ(e);
+        System.out.println("wosw.BattleFieldComponent.clickOnCell()");
         if (jp != null) {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 if (!startGame) {
@@ -98,20 +101,41 @@ public class BattleFieldComponent extends JPanel {
                     }
                     System.out.println("Single " + gm.singleDeck + "\n Two " + gm.twoDeck + "\n Three " + gm.threeDeck + "\n Four " + gm.fourDeck + "\n");
                 } else {
-                    if (yourTurn){
+                    if (yourTurn) {
                         int[] pos = new int[2];
                         pos[0] = x;
                         pos[1] = y;
-                        
+
                         os.writeObject(pos);
                         os.flush();
-                        
+
                         boolean strike = in.readBoolean();
                         if (strike){
+                            yourTurn = strike;
                             jp.setBackground(Color.red);
                             gm.map2[x][y] = 2;
-                        }else{
-                            yourTurn = false;
+                        } else {
+                            yourTurn = strike;
+                            jp.setBackground(Color.DARK_GRAY);
+                            
+                            new Thread(() -> {
+                                while (true){
+                                    try {
+                                        yourTurn = !in.readBoolean();
+                                        int[] s = (int[]) in.readObject();
+                                        if (!yourTurn){
+                                            otherCells[s[0]][s[1]].setBackground(Color.red);
+                                        } else{
+                                            otherCells[s[0]][s[1]].setBackground(Color.GREEN);
+                                            break;
+                                        }
+                                    } catch (IOException ex) {
+                                        Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+                                    } catch (ClassNotFoundException ex) {
+                                        Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+                                    }
+                                }
+                            }).start();
                         }
                     }
                 }
@@ -131,10 +155,10 @@ public class BattleFieldComponent extends JPanel {
     }
 
     public void startGame() throws UnknownHostException, IOException{
-        startGame = true;
+        System.out.println("wosw.BattleFieldComponent.startGame()");
         
         serverPort = 4545;
-        address = "192.168.0.4";
+        address = "192.168.0.12";
         
         InetAddress ipAddress = InetAddress.getByName(address);
         socket = new Socket(ipAddress, serverPort);
@@ -144,21 +168,24 @@ public class BattleFieldComponent extends JPanel {
         os.writeObject(gm);
         os.flush();
         yourTurn = in.readBoolean();
-        
-        new Thread(() -> {
-            
-            try {
-                while (true) {
-                    int[] s = (int[]) in.readObject();
-                    otherCells[s[0]][s[1]].setBackground(Color.red);
-                    gm.map1[s[0]][s[1]] = 2;
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ClassNotFoundException ex) {
-                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }).start();
+        startGame = true;
+//        potok = new Thread(() -> {
+//            
+//            try {
+//                while (true) {
+//                    yourTurn = in.readBoolean();
+//                    int[] s = (int[]) in.readObject();
+//                    
+//                    otherCells[s[0]][s[1]].setBackground(Color.red);
+//                    gm.map1[s[0]][s[1]] = 2;
+//                }
+//            } catch (IOException ex) {
+//                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+//            } catch (ClassNotFoundException ex) {
+//                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+//            }
+//        });
+//        potok.start();
     }
     
     public void setGm(GameMap f){

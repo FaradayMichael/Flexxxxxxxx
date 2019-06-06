@@ -10,6 +10,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import wosw.GameMap;
 
 /**
@@ -50,30 +52,65 @@ public class woswServer {
         int[][] mapPlayer1 = gm1.map1;
         int[][] mapPlayer2 = gm2.map1;
         
-        int numPlayerTurn = 1;
         
-        while (true) {
-            int[] pos;
-            if (numPlayerTurn == 1) {
-                pos = (int[]) in1.readObject();
-                if (mapPlayer2[pos[0]][pos[1]] == 1) {
-                    out1.writeBoolean(true);
-                    out1.flush();
-                    out2.writeObject(pos);
-                    out2.flush();
-                }else{
-                    out1.writeBoolean(false);
-                    out1.flush();
-                    
-                }
-            }else{
-                pos = (int[]) in2.readObject();
-                if (mapPlayer1[pos[0]][pos[1]] == 1) {
-                    out2.writeBoolean(true);
-                    out2.flush();
+        new Thread(() -> {
+            int numPlayerTurn = 1;
+            while (true) {
+                int[] pos;
+                if (numPlayerTurn == 1) {
+                    try {
+                        pos = (int[]) in1.readObject();
+                        if (mapPlayer2[pos[0]][pos[1]] == 1) {
+                            out1.writeBoolean(true);
+                            out1.flush();
+                            out2.writeBoolean(true);
+                            out2.flush();
+                            out2.writeObject(pos);
+                            out2.flush();
+                        } else {
+                            numPlayerTurn = 2;
+                            out1.writeBoolean(false);
+                            out1.flush();
+                            out2.writeBoolean(false);
+                            out2.flush();
+                            out2.writeObject(pos);
+                            out2.flush();
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(woswServer.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(woswServer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } else {
+                    try {
+                        pos = (int[]) in2.readObject();
+                        if (mapPlayer1[pos[0]][pos[1]] == 1) {
+                            out2.writeBoolean(true);
+                            out2.flush();
+                            out1.writeBoolean(true);
+                            out1.flush();
+                            out1.writeObject(pos);
+                            out1.flush();
+                        }else{
+                            numPlayerTurn = 1;
+                            out2.writeBoolean(false);
+                            out2.flush();
+                            out1.writeBoolean(false);
+                            out1.flush();
+                            out1.writeObject(pos);
+                            out1.flush();
+                        }
+                    } catch (IOException ex) {
+                        Logger.getLogger(woswServer.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(woswServer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
-        }
+
+        }).start();
+        
+
     }
 
 

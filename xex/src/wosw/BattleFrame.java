@@ -3,6 +3,8 @@ package wosw;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,6 +26,9 @@ public class BattleFrame extends JFrame {
     private JButton startBtn;
     private BattleFieldComponent myBattleField;
     private BattleFieldComponent enemyBattleField;
+    private JPanel panel;
+    private JPanel p;
+    private JPanel p1;
 
 
     public BattleFrame(GameMap gm2) {
@@ -52,23 +57,24 @@ public class BattleFrame extends JFrame {
         readyLabel.setFont(new Font("Arial", Font.BOLD, 15));
         startBtn = new JButton("Найти противника");
         
-        JPanel p = new JPanel(new BorderLayout());
-        JPanel p1 = new JPanel(new FlowLayout(3));
+        p = new JPanel(new BorderLayout());
+        p1 = new JPanel(new FlowLayout(3));
 
         p1.add(new JLabel("                         "));
         p1.add(btnReady);
         p1.add(readyLabel);
         p1.add(startBtn);
         
-        JPanel panel = new JPanel() {{
+        panel = new JPanel() {{
             setLayout(new FlowLayout());
         }};
         panel.add(myBattleField);
         panel.add(centerPanel);
         panel.add(enemyBattleField);
         
-        p.add(panel, BorderLayout.CENTER);
         p.add(p1, BorderLayout.NORTH);
+        p.add(panel, BorderLayout.CENTER);
+        
 
         
         btnReady.addActionListener(new ActionListener() {
