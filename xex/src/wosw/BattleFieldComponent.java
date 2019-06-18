@@ -2,7 +2,6 @@ package wosw;
 
 
 import javax.swing.*;
-import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -25,13 +24,12 @@ public class BattleFieldComponent extends JPanel {
     public int componentWidth;
     public int componentHeight;
     private GameMap gm;
-    public JPanel[][] cells;
-    private JPanel[][] otherCells;
+    public Cell[][] cells;
+    private Cell[][] otherCells;
+    private JLabel turnLabel;
     
     private boolean startGame;
     private boolean yourTurn;
-    
-    private Thread potok;
     
     private int serverPort;
     private String address;
@@ -41,7 +39,7 @@ public class BattleFieldComponent extends JPanel {
     
 
 
-    public BattleFieldComponent(GameMap gm1, int fieldWidth, int fieldHeight) {
+    public BattleFieldComponent(GameMap gm1, int fieldWidth, int fieldHeight) throws IOException {
         gm = gm1;
         startGame = false;
         int rowCount = gm.MAP_WIDTH;
@@ -55,17 +53,13 @@ public class BattleFieldComponent extends JPanel {
         int cellSizeByHeight = fieldHeight/rowCount;
         cellSize = cellSizeByWidth < cellSizeByHeight ? cellSizeByWidth : cellSizeByHeight;
 
-        cells = new JPanel[rowCount][columnCount];
+        cells = new Cell[rowCount][columnCount];
 
         for (int i = 0; i < rowCount; i++) {
             for (int j = 0; j < columnCount; j++) {
                 int finalI = i;
                 int finalJ = j;
-                cells[j][i] = new JPanel() {{
-                    setPreferredSize(new Dimension(cellSize, cellSize));
-                    setBackground(Color.white);
-                    setBorder(new MatteBorder(1, 1, finalI == rowCount - 1 ? 1 : 0, finalJ == columnCount - 1 ? 1 : 0, Color.DARK_GRAY));
-                }};
+                cells[j][i] = new Cell(cellSize, rowCount, columnCount, finalI, finalJ);
                 add(cells[j][i]);
             }
         }
@@ -85,10 +79,9 @@ public class BattleFieldComponent extends JPanel {
     }
 
     private void clickOnCell(MouseEvent e) throws IOException, ClassNotFoundException {
-        JPanel jp = getClickedPane(e);
+        Cell jp = getClickedPane(e);
         int x = getI(e);
         int y = getJ(e);
-        System.out.println("wosw.BattleFieldComponent.clickOnCell()");
         if (jp != null) {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 if (!startGame) {
@@ -104,45 +97,46 @@ public class BattleFieldComponent extends JPanel {
                     System.out.println("Single " + gm.singleDeck + "\n Two " + gm.twoDeck + "\n Three " + gm.threeDeck + "\n Four " + gm.fourDeck + "\n");
                 } else {
                     if (yourTurn) {
-                        int[] pos = new int[2];
-                        pos[0] = x;
-                        pos[1] = y;
+                        if (gm.map2[x][y] != 2 && gm.map2[x][y] != 3) {
+                            int[] pos = new int[2];
+                            pos[0] = x;
+                            pos[1] = y;
 
-                        os.writeObject(pos);
-                        os.flush();
+                            os.writeObject(pos);
+                            os.flush();
 
-                        boolean strike = in.readBoolean();
-                        if (strike){
-                            yourTurn = strike;
-                            jp.setBackground(Color.red);
-                            gm.map2[x][y] = 2;
-                        } else {
-                            yourTurn = strike;
-                            jp.setBackground(Color.DARK_GRAY);
-                            waitEnemyTurn();
+                            boolean strike = in.readBoolean();
+                            if (strike) {
+                                yourTurn = strike;
+                                jp.setBackground(Color.red);
+                                gm.map2[x][y] = 2;
+                            } else {
+                                yourTurn = strike;
+                                jp.paintShot();
+                                waitEnemyTurn();
+                            }
                         }
                     }
                 }
 
             } else if (e.getButton() == MouseEvent.BUTTON3) {
-                jp.setBackground(Color.WHITE);
-                gm.map1[x][y] = 0;
-                gm.checkShips();
-                paintAllBlack();
-                if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) {
-                    paintShipsRed();
-                    
+                if (!startGame) {
+                    jp.setBackground(Color.WHITE);
+                    gm.map1[x][y] = 0;
+                    gm.checkShips();
+                    paintAllBlack();
+                    if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) {
+                        paintShipsRed();
+                    }
+                    System.out.println("Single " + gm.singleDeck + "\n Two " + gm.twoDeck + "\n Three " + gm.threeDeck + "\n Four " + gm.fourDeck + "\n");
                 }
-                System.out.println("Single "+gm.singleDeck + "\n Two " + gm.twoDeck +"\n Three " + gm.threeDeck + "\n Four "+gm.fourDeck+"\n");
             }
         }
     }
 
-    public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{
-        System.out.println("wosw.BattleFieldComponent.startGame()");
-        
+    public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{       
         serverPort = 4545;
-        address = "192.168.0.11";
+        address = "DESKTOP-NC8UTJD";
         
         InetAddress ipAddress = InetAddress.getByName(address);
         socket = new Socket(ipAddress, serverPort);
@@ -156,23 +150,7 @@ public class BattleFieldComponent extends JPanel {
             waitEnemyTurn();
         }
         startGame = true;
-//        potok = new Thread(() -> {
-//            
-//            try {
-//                while (true) {
-//                    yourTurn = in.readBoolean();
-//                    int[] s = (int[]) in.readObject();
-//                    
-//                    otherCells[s[0]][s[1]].setBackground(Color.red);
-//                    gm.map1[s[0]][s[1]] = 2;
-//                }
-//            } catch (IOException ex) {
-//                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (ClassNotFoundException ex) {
-//                Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//        });
-//        potok.start();
+        changeTurnLabel(yourTurn);
     }
     
     private void waitEnemyTurn() throws IOException, ClassNotFoundException{
@@ -181,13 +159,12 @@ public class BattleFieldComponent extends JPanel {
                 try {
                     boolean strike = in.readBoolean();
                     int[] s = (int[]) in.readObject();
-                    
                     if (strike) {
                         yourTurn = !strike;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                     } else {
                         yourTurn = !strike;
-                        otherCells[s[0]][s[1]].setBackground(Color.GREEN);
+                        otherCells[s[0]][s[1]].paintShot();
                         break;
                     }
                 } catch (IOException ex) {
@@ -195,9 +172,7 @@ public class BattleFieldComponent extends JPanel {
                 } catch (ClassNotFoundException ex) {
                     Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
             }
-
         }).start();
 
     }
@@ -206,15 +181,27 @@ public class BattleFieldComponent extends JPanel {
         gm = f;
     }
     
-    public void setCells(JPanel[][] j){
+    public void setCells(Cell[][] j){
         otherCells = j;
     }
     
-    public JPanel[][] getCells(){
+    public Cell[][] getCells(){
         return cells;
     }
     
-    private JPanel getClickedPane(MouseEvent e) {
+    private void changeTurnLabel(boolean t){
+        if(t){
+            turnLabel.setText("Ваш ход");
+        }else{
+            turnLabel.setText("Ход противника");
+        }
+    }
+    
+    public void setTurnLabel(JLabel turnLabel) {
+        this.turnLabel = turnLabel;
+    }
+
+    private Cell getClickedPane(MouseEvent e) {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
 
@@ -253,12 +240,6 @@ public class BattleFieldComponent extends JPanel {
     private boolean checkPaintPane(int x, int y) {
         if (x == 0 && y == 0) {
             if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y + 1] == 0) {
-//               if (gm.singleDeck < 4) {
-//                   gm.singleDeck++;
-//                   return true;
-//               } else {
-//                   return false;
-//               }
                 return true;
             } else {
                 if (gm.map1[x + 1][y + 1] == 1) {
@@ -276,28 +257,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-                                /* if (gm.twoDeck < 3) {
-                                   gm.twoDeck++;
-                                   return true;
-                               } else {
-                                   return false;
-                               }*/
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     } else if (gm.map1[x][y + 1] == 1) {
@@ -312,28 +275,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-//                               if (gm.twoDeck < 3) {
-//                                   gm.twoDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     }
@@ -341,12 +286,6 @@ public class BattleFieldComponent extends JPanel {
             }
         } else if (x == 9 && y == 0) {
             if (gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0) {
-//               if (gm.singleDeck < 4) {
-//                   gm.singleDeck++;
-//                   return true;
-//               } else {
-//                   return false;
-//               }
                 return true;
             } else {
                 if (gm.map1[x - 1][y + 1] == 1) {
@@ -364,28 +303,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-//                               if (gm.twoDeck < 3) {
-//                                   gm.twoDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     } else if (gm.map1[x][y + 1] == 1) {
@@ -400,28 +321,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-//                               if (gm.twoDeck < 3) {
-//                                   gm.twoDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     }
@@ -451,28 +354,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-//                               if (gm.twoDeck < 3) {
-//                                   gm.twoDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     } else if (gm.map1[x][y - 1] == 1) {
@@ -487,28 +372,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-//                               if (gm.twoDeck < 3) {
-//                                   gm.twoDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     }
@@ -516,12 +383,6 @@ public class BattleFieldComponent extends JPanel {
             }
         } else if (x == 9 && y == 9) {
             if (gm.map1[x - 1][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0) {
-//               if (gm.singleDeck < 4) {
-//                   gm.singleDeck++;
-//                   return true;
-//               } else {
-//                   return false;
-//               }
                 return true;
             } else {
                 if (gm.map1[x - 1][y - 1] == 1) {
@@ -539,28 +400,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-//                               if (gm.twoDeck < 3) {
-//                                   gm.twoDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     } else if (gm.map1[x][y - 1] == 1) {
@@ -575,28 +418,10 @@ public class BattleFieldComponent extends JPanel {
                         }
                         switch (shipSize) {
                             case 2:
-//                               if (gm.twoDeck < 3) {
-//                                   gm.twoDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 3:
-//                               if (gm.threeDeck < 2) {
-//                                   gm.threeDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                             case 4:
-//                               if (gm.fourDeck < 1) {
-//                                   gm.fourDeck++;
-//                                   return true;
-//                               } else {
-//                                   return false;
-//                               }
                                 return true;
                         }
                     }
@@ -605,12 +430,6 @@ public class BattleFieldComponent extends JPanel {
         } else {
             if (x == 0) {
                 if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y - 1] == 0) {
-//                   if (gm.singleDeck < 4) {
-//                       gm.singleDeck++;
-//                       return true;
-//                   } else {
-//                       return false;
-//                   }
                     return true;
                 } else {
                     if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x + 1][y - 1] == 1) {
@@ -639,28 +458,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         } else if (gm.map1[x + 1][y] == 1) {
@@ -675,28 +476,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         }
@@ -704,12 +487,6 @@ public class BattleFieldComponent extends JPanel {
                 }
             } else if (x == 9) {
                 if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
-//                   if (gm.singleDeck < 4) {
-//                       gm.singleDeck++;
-//                       return true;
-//                   } else {
-//                       return false;
-//                   }
                     return true;
                 } else {
                     if (gm.map1[x - 1][y + 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
@@ -738,28 +515,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         } else if (gm.map1[x - 1][y] == 1) {
@@ -774,28 +533,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         }
@@ -803,12 +544,6 @@ public class BattleFieldComponent extends JPanel {
                 }
             } else if (y == 0) {
                 if (gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x - 1][y + 1] == 0) {
-//                   if (gm.singleDeck < 4) {
-//                       gm.singleDeck++;
-//                       return true;
-//                   } else {
-//                       return false;
-//                   }
                     return true;
                 } else {
                     if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x - 1][y + 1] == 1) {
@@ -837,28 +572,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         } else if (gm.map1[x][y + 1] == 1) {
@@ -873,28 +590,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         }
@@ -902,12 +601,6 @@ public class BattleFieldComponent extends JPanel {
                 }
             } else if (y == 9) {
                 if (gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y - 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
-//                   if (gm.singleDeck < 4) {
-//                       gm.singleDeck++;
-//                       return true;
-//                   } else {
-//                       return false;
-//                   }
                     return true;
                 } else {
                     if (gm.map1[x + 1][y - 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
@@ -936,28 +629,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         } else if (gm.map1[x][y - 1] == 1) {
@@ -972,28 +647,10 @@ public class BattleFieldComponent extends JPanel {
                             }
                             switch (shipSize) {
                                 case 2:
-//                                   if (gm.twoDeck < 3) {
-//                                       gm.twoDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 3:
-//                                   if (gm.threeDeck < 2) {
-//                                       gm.threeDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                                 case 4:
-//                                   if (gm.fourDeck < 1) {
-//                                       gm.fourDeck++;
-//                                       return true;
-//                                   } else {
-//                                       return false;
-//                                   }
                                     return true;
                             }
                         }
@@ -1001,12 +658,6 @@ public class BattleFieldComponent extends JPanel {
                 }
             } else {
                 if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0) {
-//                   if (gm.singleDeck < 4) {
-//                       gm.singleDeck++;
-//                       return true;
-//                   } else {
-//                       return false;
-//                   }
                     return true;
                 } else {
                     if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x - 1][y + 1] == 1 || gm.map1[x + 1][y - 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
@@ -1029,7 +680,6 @@ public class BattleFieldComponent extends JPanel {
                                     shipSize++;
                                     if (tmp < 0) {
                                         break;
-
                                     }
                                 }
                                 if (shipSize > 4) {
@@ -1037,28 +687,10 @@ public class BattleFieldComponent extends JPanel {
                                 }
                                 switch (shipSize) {
                                     case 2:
-//                                       if (gm.twoDeck < 3) {
-//                                           gm.twoDeck++;
-//                                           return true;
-//                                       } else {
-//                                           return false;
-//                                       }
                                         return true;
                                     case 3:
-//                                       if (gm.threeDeck < 2) {
-//                                           gm.threeDeck++;
-//                                           return true;
-//                                       } else {
-//                                           return false;
-//                                       }
                                         return true;
                                     case 4:
-//                                       if (gm.fourDeck < 1) {
-//                                           gm.fourDeck++;
-//                                           return true;
-//                                       } else {
-//                                           return false;
-//                                       }
                                         return true;
                                 }
                             } else if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
@@ -1084,28 +716,10 @@ public class BattleFieldComponent extends JPanel {
                                 }
                                 switch (shipSize) {
                                     case 2:
-//                                       if (gm.twoDeck < 3) {
-//                                           gm.twoDeck++;
-//                                           return true;
-//                                       } else {
-//                                           return false;
-//                                       }
                                         return true;
                                     case 3:
-//                                       if (gm.threeDeck < 2) {
-//                                           gm.threeDeck++;
-//                                           return true;
-//                                       } else {
-//                                           return false;
-//                                       }
                                         return true;
                                     case 4:
-//                                       if (gm.fourDeck < 1) {
-//                                           gm.fourDeck++;
-//                                           return true;
-//                                       } else {
-//                                           return false;
-//                                       }
                                         return true;
                                 }
                             }

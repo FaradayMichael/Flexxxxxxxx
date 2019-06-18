@@ -3,8 +3,6 @@ package wosw;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,6 +22,7 @@ public class BattleFrame extends JFrame {
     private JButton btnReady;
     private JLabel readyLabel;
     private JButton startBtn;
+    private JLabel turnLabel;
     private BattleFieldComponent myBattleField;
     private BattleFieldComponent enemyBattleField;
     private JPanel panel;
@@ -31,7 +30,7 @@ public class BattleFrame extends JFrame {
     private JPanel p1;
 
 
-    public BattleFrame(GameMap gm2) {
+    public BattleFrame(GameMap gm2) throws IOException {
         this.setTitle("Xex");
         this.setResizable(false);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -56,6 +55,7 @@ public class BattleFrame extends JFrame {
         readyLabel.setForeground(Color.red);
         readyLabel.setFont(new Font("Arial", Font.BOLD, 15));
         startBtn = new JButton("Найти противника");
+        turnLabel = new JLabel();
         
         p = new JPanel(new BorderLayout());
         p1 = new JPanel(new FlowLayout(3));
@@ -64,6 +64,7 @@ public class BattleFrame extends JFrame {
         p1.add(btnReady);
         p1.add(readyLabel);
         p1.add(startBtn);
+        p1.add(turnLabel);
         
         panel = new JPanel() {{
             setLayout(new FlowLayout());
@@ -89,9 +90,12 @@ public class BattleFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     enemyBattleField.setGm(myBattleField.getGm());
+                    enemyBattleField.setTurnLabel(turnLabel);
                     enemyBattleField.setCells(myBattleField.getCells());
                     enemyBattleField.startGame();
                 } catch (IOException ex) {
+                    Logger.getLogger(BattleFrame.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ClassNotFoundException ex) {
                     Logger.getLogger(BattleFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
