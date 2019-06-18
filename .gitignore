@@ -2,3 +2,5 @@
 .idea/
 out/
 xex/xex.iml
+/xex/nbproject/private/
+/xex/build/
