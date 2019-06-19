@@ -86,7 +86,7 @@ public class BattleFieldComponent extends JPanel {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 if (!startGame) {
                     if (checkPaintPane(x, y)) {
-                        jp.setBackground(Color.DARK_GRAY);
+                        //jp.setBackground(Color.DARK_GRAY);
                         gm.map1[x][y] = 1;
                         gm.checkShips();
                         paintAllBlack();
@@ -175,6 +175,231 @@ public class BattleFieldComponent extends JPanel {
             }
         }).start();
 
+    }
+    
+        private static int[][] aroundDead(int x, int y, int[][] map) {
+        try {
+            if (map[x + 1][y] == 3) {
+                try {
+                    map[x][y + 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                try {
+                    map[x][y - 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                for (int i = x + 1; i < x + 4; i++) {
+                    try {
+                        switch (map[i][y]) {
+                            case 3:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                            case 0:
+                                try {
+                                    map[i][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        
+        try {
+            if (map[x - 1][y] == 3) {
+                try {
+                    map[x][y + 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                try {
+                    map[x][y - 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                for (int i = x - 1; i > x - 4; i--) {
+                    try {
+                        switch (map[i][y]) {
+                            case 3:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                            case 0:
+                                try {
+                                    map[i][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        
+        
+        
+        try {
+            if (map[x][y + 1] == 3) {
+                try {
+                    map[x + 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                try {
+                    map[x - 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                for (int i = y + 1; i < y + 4; i++) {
+                    try {
+                        switch (map[x][i]) {
+                            case 3:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                            case 0:
+                                try {
+                                    map[x][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        
+        try {
+            if (map[x][y - 1] == 3) {
+                try {
+                    map[x + 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                try {
+                    map[x - 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                for (int i = y - 1; i > y - 4; i--) {
+                    try {
+                        switch (map[x][i]) {
+                            case 3:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                            case 0:
+                                try {
+                                    map[x][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        return map;
     }
     
     public void setGm(GameMap f){
@@ -1031,6 +1256,34 @@ public class BattleFieldComponent extends JPanel {
             }
             }
         }
+    
+    private void paintMap() {
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                switch (gm.map1[i][j]) {
+                    case 0:
+                        otherCells[i][j].setBackground(Color.WHITE);
+                    case 1:
+                        otherCells[i][j].setBackground(Color.DARK_GRAY);
+                    case 2:
+                        otherCells[i][j].paintShot();
+                    case 3:
+                        otherCells[i][j].setBackground(Color.red);
+                }
+                switch (gm.map1[i][j]) {
+                    case 0:
+                        cells[i][j].setBackground(Color.WHITE);
+                    case 1:
+                        cells[i][j].setBackground(Color.DARK_GRAY);
+                    case 2:
+                        cells[i][j].paintShot();
+                    case 3:
+                        cells[i][j].setBackground(Color.red);
+                }
+
+            }
+        }
+    }
     
     public GameMap getGm(){
         return gm;

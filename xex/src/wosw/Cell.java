@@ -16,7 +16,8 @@ import javax.swing.border.MatteBorder;
  *
  * @author Michael
  */
-public class Cell extends JPanel{
+public class Cell extends JPanel {
+
     private Image img;
     private JLabel l;
 
@@ -25,20 +26,12 @@ public class Cell extends JPanel{
         setBackground(Color.white);
         setBorder(new MatteBorder(1, 1, finalI == rowCount - 1 ? 1 : 0, finalJ == columnCount - 1 ? 1 : 0, Color.DARK_GRAY));
         l = new JLabel();
-        img = ImageIO.read(getClass().getResource("/res/2.png"));
+        img = ImageIO.read(getClass().getResource("/wosw/res/1.png"));
         this.add(l);
     }
-    
-    public void paintShot(){
+
+    public void paintShot() {
         l.setIcon(new ImageIcon(img));
     }
 
-//    @Override
-//    protected void paintComponent(Graphics g) {
-//        super.paintComponent(g);
-//        g.drawImage(img, 0, 0, this);
-//    }
-    
-    
-    
 }

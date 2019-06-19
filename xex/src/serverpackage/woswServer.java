@@ -20,6 +20,9 @@ import wosw.GameMap;
  */
 public class woswServer {
 
+    private static int[][] mapPlayer1;
+    private static int[][] mapPlayer2;
+
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         int port = 4545;
         
@@ -53,8 +56,8 @@ public class woswServer {
         //1 - Ship
         //2 - Shot
         //3 - ShotInShip
-        int[][] mapPlayer1 = gm1.map1;
-        int[][] mapPlayer2 = gm2.map1;
+         mapPlayer1 = gm1.map1;
+         mapPlayer2 = gm2.map1;
            
         
         new Thread(() -> {
@@ -66,18 +69,26 @@ public class woswServer {
                         pos = (int[]) in1.readObject();
                         if (mapPlayer2[pos[0]][pos[1]] == 1) {
                             mapPlayer2[pos[0]][pos[1]] = 3;
-                            out1.writeBoolean(true);
-                            out1.flush();
-                            out2.writeBoolean(true);
-                            out2.flush();
+                            if (isKill(pos[0], pos[1], mapPlayer2)) {
+                                out1.writeObject(shots.Kill);
+                                out1.flush();
+                                out2.writeObject(shots.Kill);
+                                out2.flush();
+                                mapPlayer2 = aroundDead(pos[0], pos[1], mapPlayer2);
+                            } else {
+                                out1.writeObject(shots.Hit);
+                                out1.flush();
+                                out2.writeObject(shots.Hit);
+                                out2.flush();
+                            }
                             out2.writeObject(pos);
                             out2.flush();
                         } else {
                             mapPlayer2[pos[0]][pos[1]] = 2;
                             numPlayerTurn = 2;
-                            out1.writeBoolean(false);
+                            out1.writeObject(shots.None);
                             out1.flush();
-                            out2.writeBoolean(false);
+                            out2.writeObject(shots.None);
                             out2.flush();
                             out2.writeObject(pos);
                             out2.flush();
@@ -92,18 +103,26 @@ public class woswServer {
                         pos = (int[]) in2.readObject();
                         if (mapPlayer1[pos[0]][pos[1]] == 1) {
                             mapPlayer1[pos[0]][pos[1]] = 3;
-                            out2.writeBoolean(true);
-                            out2.flush();
-                            out1.writeBoolean(true);
-                            out1.flush();
+                            if (isKill(pos[0], pos[1], mapPlayer1)) {
+                                out2.writeObject(shots.Kill);
+                                out2.flush();
+                                out1.writeObject(shots.Kill);
+                                out1.flush();
+                                mapPlayer1 = aroundDead(pos[0], pos[1], mapPlayer1);
+                            } else {
+                                out2.writeObject(shots.Hit);
+                                out2.flush();
+                                out1.writeObject(shots.Hit);
+                                out1.flush();
+                            }
                             out1.writeObject(pos);
                             out1.flush();
                         }else{
                             mapPlayer1[pos[0]][pos[1]] = 2;
                             numPlayerTurn = 1;
-                            out2.writeBoolean(false);
+                            out2.writeObject(shots.None);
                             out2.flush();
-                            out1.writeBoolean(false);
+                            out1.writeObject(shots.None);
                             out1.flush();
                             out1.writeObject(pos);
                             out1.flush();
@@ -126,198 +145,737 @@ public class woswServer {
         Kill
     }
 
-    private boolean isKill(int x, int y, int[][] map) {
-        if (x == 0 && y == 0) {
-            if ((map[x + 1][y] == 0 || map[x + 1][y] == 2) && (map[x][y + 1] == 0 || map[x][y + 1] == 2)) {
-                return true;
-            }
-            if (map[x + 1][y] == 1 || map[x][y + 1] == 1) {
-                return false;
-            }
-            if (map[x + 1][y] == 3 || map[x][y + 1] == 3) {
-                if (map[x + 1][y] == 3) {
-                    if (map[x + 2][y] == 3) {
-                        if (map[x + 3][y] == 3) {
-                            return true;
-                        }
-                    } else if (map[x + 2][y] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
+    private static int[][] aroundDead(int x, int y, int[][] map) {
+        try {
+            if (map[x + 1][y] == 3) {
+                try {
+                    map[x][y + 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
                 }
-                if (map[x][y + 1] == 3) {
-                    if (map[x][y + 2] == 3) {
-                        if (map[x][y + 3] == 3) {
-                            return true;
-                        }
-                    } else if (map[x][y + 2] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
+                try {
+                    map[x][y - 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
                 }
-            }
-        }
-
-        if (x == 9 && y == 9) {
-            if ((map[x - 1][y] == 0 || map[x - 1][y] == 2) && (map[x][y - 1] == 0 || map[x][y - 1] == 2)) {
-                return true;
-            }
-            if (map[x - 1][y] == 1 || map[x][y - 1] == 1) {
-                return false;
-            }
-            if (map[x - 1][y] == 3 || map[x][y - 1] == 3) {
-                if (map[x - 1][y] == 3) {
-                    if (map[x - 2][y] == 3) {
-                        if (map[x - 3][y] == 3) {
-                            return true;
-                        }
-                    } else if (map[x - 2][y] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-                if (map[x][y - 1] == 3) {
-                    if (map[x][y - 2] == 3) {
-                        if (map[x][y - 3] == 3) {
-                            return true;
-                        }
-                    } else if (map[x][y - 2] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if (x == 9 && y == 0) {
-            if ((map[x - 1][y] == 0 || map[x - 1][y] == 2) && (map[x][y + 1] == 0 || map[x][y + 1] == 2)) {
-                return true;
-            }
-            if (map[x - 1][y] == 1 || map[x][y + 1] == 1) {
-                return false;
-            }
-            if (map[x - 1][y] == 3 || map[x][y + 1] == 3) {
-                if (map[x - 1][y] == 3) {
-                    if (map[x - 2][y] == 3) {
-                        if (map[x - 3][y] == 3) {
-                            return true;
-                        }
-                    } else if (map[x + 2][y] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-                if (map[x][y + 1] == 3) {
-                    if (map[x][y + 2] == 3) {
-                        if (map[x][y + 3] == 3) {
-                            return true;
-                        }
-                    } else if (map[x][y + 2] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if (x == 0 && y == 9) {
-            if ((map[x + 1][y] == 0 || map[x + 1][y] == 2) && (map[x][y - 1] == 0 || map[x][y - 1] == 2)) {
-                return true;
-            }
-            if (map[x + 1][y] == 1 || map[x][y - 1] == 1) {
-                return false;
-            }
-            if (map[x + 1][y] == 3 || map[x][y - 1] == 3) {
-                if (map[x + 1][y] == 3) {
-                    if (map[x + 2][y] == 3) {
-                        if (map[x + 3][y] == 3) {
-                            return true;
-                        }
-                    } else if (map[x + 2][y] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-                if (map[x][y - 1] == 3) {
-                    if (map[x][y - 2] == 3) {
-                        if (map[x][y - 3] == 3) {
-                            return true;
-                        }
-                    } else if (map[x][y - 2] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        if (x == 1) {
-            if ((map[x + 1][y] == 0 || map[x + 1][y] == 0) && (map[x][y + 1] == 0 || map[x][y + 1] == 2) && (map[x][y - 1] == 0 || map[x][y] == 2)) {
-                return true;
-            }
-            if (map[x + 1][y] == 1 || map[x][y + 1] == 1 || map[x][y - 1] == 1) {
-                return false;
-            }
-            if (map[x+1][y]==3||map[x][y+1]==3||map[x][y-1]==3){
-                if(map[x+1][y]==3){
-                    if (map[x + 2][y] == 3) {
-                        if (map[x + 3][y] == 3) {
-                            return true;
-                        }
-                    } else if (map[x + 2][y] == 1) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-                int s = 1;
-                if(map[x][y+1]==3){
-                    s++;
-                    if(y+2<=9){
-                        if(map[x][y+2]==3){
-                            s++;
-                            if(y+3<=9){
-                                if(map[x][y+3]==3){
-                                    return true;
+                for (int i = x + 1; i < x + 4; i++) {
+                    try {
+                        switch (map[i][y]) {
+                            case 3:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
                                 }
-                            }else if(map[x][y+2]==1){
-                                return false;
-                            }
-                        }
-                        if(map[x][y-1]==3){
-                            s++;
-                            if(s==4){
-                                return true;
-                            }
-                            if(y-2>=0){
-                                if(map[x][y-2]==3){
-                                    s++;
-                                    if(s==4){
-                                        return true;
-                                    }
-                                    if(y-3>=0){
-                                        if(map[x][y-3]==3){
-                                            return true;
-                                        }
-                                    }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
                                 }
-                            }
+                            case 0:
+                                try {
+                                    map[i][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
                         }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
                     }
                 }
             }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        
+        try {
+            if (map[x - 1][y] == 3) {
+                try {
+                    map[x][y + 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                try {
+                    map[x][y - 1] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                for (int i = x - 1; i > x - 4; i--) {
+                    try {
+                        switch (map[i][y]) {
+                            case 3:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                            case 0:
+                                try {
+                                    map[i][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[i][y + 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[i][y - 1] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
         }
         
         
-        return false;
+        
+        try {
+            if (map[x][y + 1] == 3) {
+                try {
+                    map[x + 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                try {
+                    map[x - 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                for (int i = y + 1; i < y + 4; i++) {
+                    try {
+                        switch (map[x][i]) {
+                            case 3:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                            case 0:
+                                try {
+                                    map[x][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        
+        try {
+            if (map[x][y - 1] == 3) {
+                try {
+                    map[x + 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                try {
+                    map[x - 1][y] = 2;
+                } catch (IndexOutOfBoundsException e) {
+                }
+                for (int i = y - 1; i > y - 4; i--) {
+                    try {
+                        switch (map[x][i]) {
+                            case 3:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                            case 0:
+                                try {
+                                    map[x][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                            case 2:
+                                try {
+                                    map[x + 1][i] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                try {
+                                    map[x - 1][y] = 2;
+                                } catch (IndexOutOfBoundsException e) {
+                                }
+                                break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                        break;
+                    }
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        return map;
     }
+    
+    private static boolean isKill(int x, int y, int[][] map) {
+        boolean f1;
+        boolean f2;
+        boolean f3;
+        boolean f4;
+        try {
+            f1 = map[x + 1][y] == 0 || map[x + 1][y] == 2;
+        } catch (IndexOutOfBoundsException e) {
+            f1 = true;
+        }
+        try {
+            f2 = map[x - 1][y] == 0 || map[x - 1][y] == 2;
+        } catch (IndexOutOfBoundsException e) {
+            f2 = true;
+        }
+        try {
+            f3 = map[x][y + 1] == 0 || map[x][y + 1] == 2;
+        } catch (IndexOutOfBoundsException e) {
+            f3 = true;
+        }
+        try {
+            f4 = map[x][y - 1] == 0 || map[x][y - 1] == 2;
+        } catch (IndexOutOfBoundsException e) {
+            f4 = true;
+        }
+
+        if (f1 && f2 && f3 && f4) {
+            return true;
+        }
+        
+        
+        try {
+            f1 = map[x + 1][y] == 1;
+        } catch (IndexOutOfBoundsException e) {
+            f1 = false;
+        }
+        try {
+            f2 = map[x - 1][y] == 1;
+        } catch (IndexOutOfBoundsException e) {
+            f2 = false;
+        }
+        try {
+            f3 = map[x][y + 1] == 1;
+        } catch (IndexOutOfBoundsException e) {
+            f3 = false;
+        }
+        try {
+            f4 = map[x][y - 1] == 1;
+        } catch (IndexOutOfBoundsException e) {
+            f4 = false;
+        }
+
+        if (f1 || f2 || f3 || f4) {
+            return false;
+        }
+        
+        int s = 1;
+        int i,j;
+        for (i = x + 1; i < x + 4; i++) {
+            try {
+                switch (map[i][y]) {
+                    case 0:
+                        break;
+                    case 2:
+                        break;
+                    case 1:
+                        return false;
+                    case 3:
+                        s++;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+        for (i = x - 1; i > x - 4; i--){
+            try {
+                switch (map[i][y]) {
+                    case 0:
+                        break;
+                    case 2:
+                        break;
+                    case 1:
+                        return false;
+                    case 3:
+                        s++;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+        if(s!=1){
+            return true;
+        } 
+
+        s = 1;
+        for (i = y + 1; i < y + 4; i++) {
+            try {
+                switch (map[x][i]) {
+                    case 0:
+                        break;
+                    case 2:
+                        break;
+                    case 1:
+                        return false;
+                    case 3:
+                        s++;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+        for (i = y - 1; i > y - 4; i--) {
+            try {
+                switch (map[x][i]) {
+                    case 0:
+                        break;
+                    case 2:
+                        break;
+                    case 1:
+                        return false;
+                    case 3:
+                        s++;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                break;
+            }
+        }
+        return true;
+    }
+
+//    private boolean isKill(int x, int y, int[][] map) {
+//        if (x == 0 && y == 0) {
+//            if ((map[x + 1][y] == 0 || map[x + 1][y] == 2) && (map[x][y + 1] == 0 || map[x][y + 1] == 2)) {
+//                return true;
+//            }
+//            if (map[x + 1][y] == 1 || map[x][y + 1] == 1) {
+//                return false;
+//            }
+//            if (map[x + 1][y] == 3 || map[x][y + 1] == 3) {
+//                if (map[x + 1][y] == 3) {
+//                    if (map[x + 2][y] == 3) {
+//                        if (map[x + 3][y] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x + 2][y] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                if (map[x][y + 1] == 3) {
+//                    if (map[x][y + 2] == 3) {
+//                        if (map[x][y + 3] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x][y + 2] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (x == 9 && y == 9) {
+//            if ((map[x - 1][y] == 0 || map[x - 1][y] == 2) && (map[x][y - 1] == 0 || map[x][y - 1] == 2)) {
+//                return true;
+//            }
+//            if (map[x - 1][y] == 1 || map[x][y - 1] == 1) {
+//                return false;
+//            }
+//            if (map[x - 1][y] == 3 || map[x][y - 1] == 3) {
+//                if (map[x - 1][y] == 3) {
+//                    if (map[x - 2][y] == 3) {
+//                        if (map[x - 3][y] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x - 2][y] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                if (map[x][y - 1] == 3) {
+//                    if (map[x][y - 2] == 3) {
+//                        if (map[x][y - 3] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x][y - 2] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (x == 9 && y == 0) {
+//            if ((map[x - 1][y] == 0 || map[x - 1][y] == 2) && (map[x][y + 1] == 0 || map[x][y + 1] == 2)) {
+//                return true;
+//            }
+//            if (map[x - 1][y] == 1 || map[x][y + 1] == 1) {
+//                return false;
+//            }
+//            if (map[x - 1][y] == 3 || map[x][y + 1] == 3) {
+//                if (map[x - 1][y] == 3) {
+//                    if (map[x - 2][y] == 3) {
+//                        if (map[x - 3][y] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x + 2][y] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                if (map[x][y + 1] == 3) {
+//                    if (map[x][y + 2] == 3) {
+//                        if (map[x][y + 3] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x][y + 2] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (x == 0 && y == 9) {
+//            if ((map[x + 1][y] == 0 || map[x + 1][y] == 2) && (map[x][y - 1] == 0 || map[x][y - 1] == 2)) {
+//                return true;
+//            }
+//            if (map[x + 1][y] == 1 || map[x][y - 1] == 1) {
+//                return false;
+//            }
+//            if (map[x + 1][y] == 3 || map[x][y - 1] == 3) {
+//                if (map[x + 1][y] == 3) {
+//                    if (map[x + 2][y] == 3) {
+//                        if (map[x + 3][y] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x + 2][y] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                if (map[x][y - 1] == 3) {
+//                    if (map[x][y - 2] == 3) {
+//                        if (map[x][y - 3] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x][y - 2] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (x == 1) {
+//            if ((map[x + 1][y] == 0 || map[x + 1][y] == 2) && (map[x][y + 1] == 0 || map[x][y + 1] == 2) && (map[x][y - 1] == 0 || map[x][y-1] == 2)) {
+//                return true;
+//            }
+//            if (map[x + 1][y] == 1 || map[x][y + 1] == 1 || map[x][y - 1] == 1) {
+//                return false;
+//            }
+//            if (map[x+1][y]==3||map[x][y+1]==3||map[x][y-1]==3){
+//                if(map[x+1][y]==3){
+//                    if (map[x + 2][y] == 3) {
+//                        if (map[x + 3][y] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x + 2][y] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                int s = 1;
+//                if(map[x][y+1]==3){
+//                    s++;
+//                    if(y+2<=9){
+//                        if(map[x][y+2]==3){
+//                            s++;
+//                            if(y+3<=9){
+//                                if(map[x][y+3]==3){
+//                                    return true;
+//                                }
+//                            }else if(map[x][y+2]==1){
+//                                return false;
+//                            }
+//                        }
+//                        if(map[x][y-1]==3){
+//                            s++;
+//                            if(s==4){
+//                                return true;
+//                            }
+//                            if(y-2>=0){
+//                                if(map[x][y-2]==3){
+//                                    s++;
+//                                    if(s==4){
+//                                        return true;
+//                                    }
+//                                    if(y-3>=0){
+//                                        if(map[x][y-3]==3){
+//                                            return true;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        if (x == 9) {
+//            if ((map[x - 1][y] == 0 || map[x - 1][y] == 2) && (map[x][y + 1] == 0 || map[x][y + 1] == 2) && (map[x][y - 1] == 0 || map[x][y-1] == 2)) {
+//                return true;
+//            }
+//            if (map[x - 1][y] == 1 || map[x][y + 1] == 1 || map[x][y - 1] == 1) {
+//                return false;
+//            }
+//            if (map[x - 1][y] == 3 || map[x][y + 1] == 3 || map[x][y - 1] == 3) {
+//                if (map[x - 1][y] == 3) {
+//                    if (map[x - 2][y] == 3) {
+//                        if (map[x - 3][y] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x - 2][y] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                int s = 1;
+//                if (map[x][y + 1] == 3) {
+//                    s++;
+//                    if (y + 2 <= 9) {
+//                        if (map[x][y + 2] == 3) {
+//                            s++;
+//                            if (y + 3 <= 9) {
+//                                if (map[x][y + 3] == 3) {
+//                                    return true;
+//                                }
+//                            } else if (map[x][y + 2] == 1) {
+//                                return false;
+//                            }
+//                        }
+//                        if (map[x][y - 1] == 3) {
+//                            s++;
+//                            if (s == 4) {
+//                                return true;
+//                            }
+//                            if (y - 2 >= 0) {
+//                                if (map[x][y - 2] == 3) {
+//                                    s++;
+//                                    if (s == 4) {
+//                                        return true;
+//                                    }
+//                                    if (y - 3 >= 0) {
+//                                        if (map[x][y - 3] == 3) {
+//                                            return true;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        
+//        if (y == 1) {
+//            if ((map[x][y+1] == 0 || map[x][y+1] == 2) && (map[x+1][y] == 0 || map[x+1][y] == 2) && (map[x-1][y] == 0 || map[x-1][y] == 2)) {
+//                return true;
+//            }
+//            if (map[x][y+1] == 1 || map[x+1][y] == 1 || map[x-1][y] == 1) {
+//                return false;
+//            }
+//            if (map[x][y+1] == 3 || map[x+1][y] == 3 || map[x-1][y] == 3) {
+//                if (map[x][y+1] == 3) {
+//                    if (map[x][y+2] == 3) {
+//                        if (map[x][y+3] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x][y+2] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                int s = 1;
+//                if (map[x+1][y] == 3) {
+//                    s++;
+//                    if (x + 2 <= 9) {
+//                        if (map[x+2][y] == 3) {
+//                            s++;
+//                            if (x + 3 <= 9) {
+//                                if (map[x+3][y] == 3) {
+//                                    return true;
+//                                }
+//                            } else if (map[x+2][y] == 1) {
+//                                return false;
+//                            }
+//                        }
+//                        if (map[x-1][y] == 3) {
+//                            s++;
+//                            if (s == 4) {
+//                                return true;
+//                            }
+//                            if (x - 2 >= 0) {
+//                                if (map[x-2][y] == 3) {
+//                                    s++;
+//                                    if (s == 4) {
+//                                        return true;
+//                                    }
+//                                    if (x - 3 >= 0) {
+//                                        if (map[x-3][y] == 3) {
+//                                            return true;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        
+//        if (y == 9) {
+//            if ((map[x][y - 1] == 0 || map[x][y - 1] == 2) && (map[x + 1][y] == 0 || map[x + 1][y] == 2) && (map[x - 1][y] == 0 || map[x - 1][y] == 2)) {
+//                return true;
+//            }
+//            if (map[x][y - 1] == 1 || map[x + 1][y] == 1 || map[x - 1][y] == 1) {
+//                return false;
+//            }
+//            if (map[x][y - 1] == 3 || map[x + 1][y] == 3 || map[x - 1][y] == 3) {
+//                if (map[x][y - 1] == 3) {
+//                    if (map[x][y - 2] == 3) {
+//                        if (map[x][y - 3] == 3) {
+//                            return true;
+//                        }
+//                    } else if (map[x][y - 2] == 1) {
+//                        return false;
+//                    } else {
+//                        return true;
+//                    }
+//                }
+//                int s = 1;
+//                if (map[x + 1][y] == 3||map[x-1][y]==3) {
+//                    s++;
+//                    if (x + 2 <= 9) {
+//                        if (map[x + 2][y] == 3) {
+//                            s++;
+//                            if (x + 3 <= 9) {
+//                                if (map[x + 3][y] == 3) {
+//                                    return true;
+//                                }
+//                            } else if (map[x + 2][y] == 1) {
+//                                return false;
+//                            }
+//                        }
+//                        if (map[x - 1][y] == 3) {
+//                            s++;
+//                            if (s == 4) {
+//                                return true;
+//                            }
+//                            if (x - 2 >= 0) {
+//                                if (map[x - 2][y] == 3) {
+//                                    s++;
+//                                    if (s == 4) {
+//                                        return true;
+//                                    }
+//                                    if (x - 3 >= 0) {
+//                                        if (map[x - 3][y] == 3) {
+//                                            return true;
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        if(x>0&&x<9&&y>0&&y<9){
+//            if((map[x+1][y]==0||map[x+1][y]==2)&&(map[x-1][y]==0||map[x-1][y]==2)&&(map[x][y+1]==0||map[x][y+1]==2)&&(map[x][y-1]==0||map[x][y-1]==2)){
+//                return true;
+//            }
+//            if(map[x+1][y]==1||map[x-1][y]==1||map[x][y+1]==1||map[x][y-1]==1){
+//                return false;
+//            }
+//            if(map[x+1][y]==3||map[x-1][y]==3||map[x][y+1]==3||map[x][y-1]==3){
+//                if()
+//            }
+//        }
+//        
+//        return false;
+//    }
     
 }
