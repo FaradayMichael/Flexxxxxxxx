@@ -107,7 +107,9 @@ public class BattleFieldComponent extends JPanel {
                                 yourTurn = true;
                                 jp.setBackground(Color.red);
                                 gm.map2[x][y] = 2;
+                                turnLabel.setText("Ваш ход");
                             } else {
+                                turnLabel.setText("Ход противника");
                                 yourTurn = false;
                                 jp.paintShot();
                                 waitEnemyTurn();
@@ -160,9 +162,11 @@ public class BattleFieldComponent extends JPanel {
                     if (strike == 1 || strike == 2) {
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
+                        turnLabel.setText("Ход противника");
                     } else {
                         yourTurn = true;
                         otherCells[s[0]][s[1]].paintShot();
+                        turnLabel.setText("Ваш ход");
                         break;
                     }
                 } catch (IOException ex) {
