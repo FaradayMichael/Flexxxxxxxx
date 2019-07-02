@@ -106,7 +106,7 @@ public class BattleFieldComponent extends JPanel {
                             if (strike == 1) {
                                 yourTurn = true;
                                 jp.setBackground(Color.red);
-                                gm.map2[x][y] = 2;
+                                gm.map2[x][y] = 3;
                                 turnLabel.setText("Ваш ход");
                             } else if (strike == 2) {
                                 yourTurn = true;
@@ -117,6 +117,7 @@ public class BattleFieldComponent extends JPanel {
                                 paintMap();
                             }
                             else {
+                                gm.map2[x][y] = 2;
                                 turnLabel.setText("Ход противника");
                                 yourTurn = false;
                                 jp.paintShot();
@@ -168,15 +169,21 @@ public class BattleFieldComponent extends JPanel {
                     int strike = in.readInt();
                     int[] s = (int[]) in.readObject();
                     if (strike == 1) {
+                        gm.map1[s[0]][s[1]] = 3;
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                         turnLabel.setText("Ход противника");
+                        
                     } else if (strike == 2) {
+                        gm.map1[s[0]][s[1]] = 3;
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                         turnLabel.setText("Ход противника");
+                        aroundDead(s[0], s[1], gm.map1);
+                        paintMap();
                     }
                     else {
+                        gm.map1[s[0]][s[1]] = 2;
                         yourTurn = true;
                         otherCells[s[0]][s[1]].paintShot();
                         turnLabel.setText("Ваш ход");
@@ -412,6 +419,57 @@ public class BattleFieldComponent extends JPanel {
             }
         } catch (IndexOutOfBoundsException e) {
         }
+
+        try {
+            if (map[x + 1][y + 1] == 0 || map[x + 1][y + 1] == 2) {
+                map[x + 1][y + 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x + 1][y - 1] == 0 || map[x + 1][y - 1] == 2) {
+                map[x + 1][y - 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x + 1][y] == 0 || map[x + 1][y] == 2) {
+                map[x + 1][y] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x - 1][y - 1] == 0 || map[x - 1][y - 1] == 2) {
+                map[x - 1][y - 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x - 1][y + 1] == 0 || map[x - 1][y + 1] == 2) {
+                map[x - 1][y + 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x - 1][y] == 0 || map[x - 1][y] == 2) {
+                map[x - 1][y] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x][y + 1] == 0 || map[x][y + 1] == 2) {
+                map[x][y + 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x][y - 1] == 0 || map[x][y - 1] == 2) {
+                map[x][y - 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+
+
         return map;
     }
     
