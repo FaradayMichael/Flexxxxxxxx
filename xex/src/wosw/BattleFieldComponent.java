@@ -1276,22 +1276,30 @@ public class BattleFieldComponent extends JPanel {
                 switch (gm.map1[i][j]) {
                     case 0:
                         otherCells[i][j].setBackground(Color.WHITE);
+                        continue;
                     case 1:
                         otherCells[i][j].setBackground(Color.DARK_GRAY);
+                        continue;
                     case 2:
                         otherCells[i][j].paintShot();
+                        continue;
                     case 3:
                         otherCells[i][j].setBackground(Color.red);
+                        continue;
                 }
                 switch (gm.map2[i][j]) {
                     case 0:
                         cells[i][j].setBackground(Color.WHITE);
+                        continue;
                     case 1:
                         cells[i][j].setBackground(Color.DARK_GRAY);
+                        continue;
                     case 2:
                         cells[i][j].paintShot();
+                        continue;
                     case 3:
                         cells[i][j].setBackground(Color.red);
+                        continue;
                 }
 
             }
