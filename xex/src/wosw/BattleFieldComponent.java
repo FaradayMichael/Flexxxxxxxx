@@ -1336,7 +1336,7 @@ public class BattleFieldComponent extends JPanel {
     private void paintMap() {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-               /* switch (gm.map1[i][j]) {
+                switch (gm.map1[i][j]) {
                     case 0:
                         otherCells[i][j].setBackground(Color.WHITE);
                         continue;
@@ -1349,8 +1349,8 @@ public class BattleFieldComponent extends JPanel {
                     case 3:
                         otherCells[i][j].setBackground(Color.red);
                         continue;
-                }*/
-                switch (gm.map1[i][j]) {
+                }
+                switch (gm.map2[i][j]) {
                     case 0:
                         cells[i][j].setBackground(Color.WHITE);
                         continue;
