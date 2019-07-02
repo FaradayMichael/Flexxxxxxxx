@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import wosw.GameMap;
+import wosw.Shots;
 
 /**
  *
@@ -65,15 +66,15 @@ public class woswServer {
                         if (mapPlayer2[pos[0]][pos[1]] == 1) {
                             mapPlayer2[pos[0]][pos[1]] = 3;
                             if (isKill(pos[0], pos[1], mapPlayer2)) {
-                                out1.writeObject(shots.Kill);
+                                out1.writeObject(Shots.shots.Kill);
                                 out1.flush();
-                                out2.writeObject(shots.Kill);
+                                out2.writeObject(Shots.shots.Kill);
                                 out2.flush();
                                 mapPlayer2 = aroundDead(pos[0], pos[1], mapPlayer2);
                             } else {
-                                out1.writeObject(shots.Hit);
+                                out1.writeObject(Shots.shots.Hit);
                                 out1.flush();
-                                out2.writeObject(shots.Hit);
+                                out2.writeObject(Shots.shots.Hit);
                                 out2.flush();
                             }
                             out2.writeObject(pos);
@@ -81,9 +82,9 @@ public class woswServer {
                         } else {
                             mapPlayer2[pos[0]][pos[1]] = 2;
                             numPlayerTurn = 2;
-                            out1.writeObject(shots.None);
+                            out1.writeObject(Shots.shots.None);
                             out1.flush();
-                            out2.writeObject(shots.None);
+                            out2.writeObject(Shots.shots.None);
                             out2.flush();
                             out2.writeObject(pos);
                             out2.flush();
@@ -99,15 +100,15 @@ public class woswServer {
                         if (mapPlayer1[pos[0]][pos[1]] == 1) {
                             mapPlayer1[pos[0]][pos[1]] = 3;
                             if (isKill(pos[0], pos[1], mapPlayer1)) {
-                                out2.writeObject(shots.Kill);
+                                out2.writeObject(Shots.shots.Kill);
                                 out2.flush();
-                                out1.writeObject(shots.Kill);
+                                out1.writeObject(Shots.shots.Kill);
                                 out1.flush();
                                 mapPlayer1 = aroundDead(pos[0], pos[1], mapPlayer1);
                             } else {
-                                out2.writeObject(shots.Hit);
+                                out2.writeObject(Shots.shots.Hit);
                                 out2.flush();
-                                out1.writeObject(shots.Hit);
+                                out1.writeObject(Shots.shots.Hit);
                                 out1.flush();
                             }
                             out1.writeObject(pos);
@@ -115,9 +116,9 @@ public class woswServer {
                         }else{
                             mapPlayer1[pos[0]][pos[1]] = 2;
                             numPlayerTurn = 1;
-                            out2.writeObject(shots.None);
+                            out2.writeObject(Shots.shots.None);
                             out2.flush();
-                            out1.writeObject(shots.None);
+                            out1.writeObject(Shots.shots.None);
                             out1.flush();
                             out1.writeObject(pos);
                             out1.flush();
@@ -132,12 +133,6 @@ public class woswServer {
 
         }).start();
 
-    }
-
-    enum shots {
-        None,
-        Hit,
-        Kill
     }
 
     private static int[][] aroundDead(int x, int y, int[][] map) {

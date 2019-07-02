@@ -102,8 +102,8 @@ public class BattleFieldComponent extends JPanel {
                             os.writeObject(pos);
                             os.flush();
 
-                            shots strike = (shots) in.readObject();
-                            if (strike == shots.Hit) {
+                            Shots.shots strike = (Shots.shots) in.readObject();
+                            if (strike == Shots.shots.Hit) {
                                 yourTurn = true;
                                 jp.setBackground(Color.red);
                                 gm.map2[x][y] = 2;
@@ -131,11 +131,6 @@ public class BattleFieldComponent extends JPanel {
         }
     }
 
-    enum shots {
-        None,
-        Hit,
-        Kill
-    }
 
     public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{       
         serverPort = 4545;
@@ -160,9 +155,9 @@ public class BattleFieldComponent extends JPanel {
         new Thread(() -> {
             while (true) {
                 try {
-                    shots strike = (shots) in.readObject();
+                    Shots.shots strike = (Shots.shots) in.readObject();
                     int[] s = (int[]) in.readObject();
-                    if (strike == shots.Hit) {
+                    if (strike == Shots.shots.Hit) {
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                     } else {
