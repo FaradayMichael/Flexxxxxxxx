@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 
-
 /**
  * @author Michael Faraday
  */
@@ -16,7 +15,6 @@ public class BattleFrame extends JFrame {
 
     private static final int WIDTH = 1300;
     private static final int HEIGHT = 600;
-
 
     private GameMap gm;
     private JButton btnReady;
@@ -28,7 +26,6 @@ public class BattleFrame extends JFrame {
     private JPanel panel;
     private JPanel p;
     private JPanel p1;
-
 
     public BattleFrame(GameMap gm2) throws IOException {
         this.setTitle("Xex");

@@ -2,7 +2,6 @@ package wosw;
 
 import java.io.IOException;
 
-
 /**
  *
  * @author Michael Faraday

@@ -1,6 +1,5 @@
 package wosw;
 
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -37,8 +36,6 @@ public class BattleFieldComponent extends JPanel {
     private ObjectOutputStream os;
     private ObjectInputStream in;
     
-
-
     public BattleFieldComponent(GameMap gm1, int fieldWidth, int fieldHeight) throws IOException {
         gm = gm1;
         startGame = false;
@@ -105,13 +102,13 @@ public class BattleFieldComponent extends JPanel {
                             os.writeObject(pos);
                             os.flush();
 
-                            boolean strike = in.readBoolean();
-                            if (strike) {
-                                yourTurn = strike;
+                            shots strike = (shots) in.readObject();
+                            if (strike == shots.Hit) {
+                                yourTurn = true;
                                 jp.setBackground(Color.red);
                                 gm.map2[x][y] = 2;
                             } else {
-                                yourTurn = strike;
+                                yourTurn = false;
                                 jp.paintShot();
                                 waitEnemyTurn();
                             }
@@ -134,9 +131,15 @@ public class BattleFieldComponent extends JPanel {
         }
     }
 
+    enum shots {
+        None,
+        Hit,
+        Kill
+    }
+
     public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{       
         serverPort = 4545;
-        address = "DESKTOP-NC8UTJD";
+        address = "172.18.9.158";
         
         InetAddress ipAddress = InetAddress.getByName(address);
         socket = new Socket(ipAddress, serverPort);
