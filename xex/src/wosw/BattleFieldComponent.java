@@ -102,8 +102,8 @@ public class BattleFieldComponent extends JPanel {
                             os.writeObject(pos);
                             os.flush();
 
-                            Shots.shots strike = (Shots.shots) in.readObject();
-                            if (strike == Shots.shots.Hit) {
+                            int strike = in.readInt();
+                            if (strike == 1 || strike == 2) {
                                 yourTurn = true;
                                 jp.setBackground(Color.red);
                                 gm.map2[x][y] = 2;
@@ -155,9 +155,9 @@ public class BattleFieldComponent extends JPanel {
         new Thread(() -> {
             while (true) {
                 try {
-                    Shots.shots strike = (Shots.shots) in.readObject();
+                    int strike = in.readInt();
                     int[] s = (int[]) in.readObject();
-                    if (strike == Shots.shots.Hit) {
+                    if (strike == 1 || strike == 2) {
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                     } else {
