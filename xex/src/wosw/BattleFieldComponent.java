@@ -160,13 +160,13 @@ public class BattleFieldComponent extends JPanel {
         new Thread(() -> {
             while (true) {
                 try {
-                    boolean strike = in.readBoolean();
+                    shots strike = (shots) in.readObject();
                     int[] s = (int[]) in.readObject();
-                    if (strike) {
-                        yourTurn = !strike;
+                    if (strike == shots.Hit) {
+                        yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                     } else {
-                        yourTurn = !strike;
+                        yourTurn = true;
                         otherCells[s[0]][s[1]].paintShot();
                         break;
                     }
