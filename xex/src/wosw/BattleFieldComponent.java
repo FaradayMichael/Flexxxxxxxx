@@ -103,12 +103,20 @@ public class BattleFieldComponent extends JPanel {
                             os.flush();
 
                             int strike = in.readInt();
-                            if (strike == 1 || strike == 2) {
+                            if (strike == 1) {
                                 yourTurn = true;
                                 jp.setBackground(Color.red);
                                 gm.map2[x][y] = 2;
                                 turnLabel.setText("Ваш ход");
-                            } else {
+                            } else if (strike == 2) {
+                                yourTurn = true;
+                                jp.setBackground(Color.red);
+                                gm.map2[x][y] = 3;
+                                turnLabel.setText("Ваш ход");
+                                gm.map2 = aroundDead(x, y, gm.map2);
+                                paintMap();
+                            }
+                            else {
                                 turnLabel.setText("Ход противника");
                                 yourTurn = false;
                                 jp.paintShot();
@@ -153,17 +161,22 @@ public class BattleFieldComponent extends JPanel {
         changeTurnLabel(yourTurn);
     }
     
-    private void waitEnemyTurn() throws IOException, ClassNotFoundException{
+    private void waitEnemyTurn() throws IOException, ClassNotFoundException {
         new Thread(() -> {
             while (true) {
                 try {
                     int strike = in.readInt();
                     int[] s = (int[]) in.readObject();
-                    if (strike == 1 || strike == 2) {
+                    if (strike == 1) {
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                         turnLabel.setText("Ход противника");
-                    } else {
+                    } else if (strike == 2) {
+                        yourTurn = false;
+                        otherCells[s[0]][s[1]].setBackground(Color.red);
+                        turnLabel.setText("Ход противника");
+                    }
+                    else {
                         yourTurn = true;
                         otherCells[s[0]][s[1]].paintShot();
                         turnLabel.setText("Ваш ход");
@@ -178,8 +191,8 @@ public class BattleFieldComponent extends JPanel {
         }).start();
 
     }
-    
-        private static int[][] aroundDead(int x, int y, int[][] map) {
+
+    private static int[][] aroundDead(int x, int y, int[][] map) {
         try {
             if (map[x + 1][y] == 3) {
                 try {
@@ -234,7 +247,7 @@ public class BattleFieldComponent extends JPanel {
             }
         } catch (IndexOutOfBoundsException e) {
         }
-        
+
         try {
             if (map[x - 1][y] == 3) {
                 try {
@@ -289,9 +302,7 @@ public class BattleFieldComponent extends JPanel {
             }
         } catch (IndexOutOfBoundsException e) {
         }
-        
-        
-        
+
         try {
             if (map[x][y + 1] == 3) {
                 try {
@@ -346,7 +357,7 @@ public class BattleFieldComponent extends JPanel {
             }
         } catch (IndexOutOfBoundsException e) {
         }
-        
+
         try {
             if (map[x][y - 1] == 3) {
                 try {
@@ -1272,7 +1283,7 @@ public class BattleFieldComponent extends JPanel {
                     case 3:
                         otherCells[i][j].setBackground(Color.red);
                 }
-                switch (gm.map1[i][j]) {
+                switch (gm.map2[i][j]) {
                     case 0:
                         cells[i][j].setBackground(Color.WHITE);
                     case 1:
