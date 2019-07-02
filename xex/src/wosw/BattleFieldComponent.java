@@ -90,6 +90,10 @@ public class BattleFieldComponent extends JPanel {
                         if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) {
                             paintShipsRed();
                         }
+                        
+                       /* gm.map1[1][1]=3;
+                        gm.map1=aroundDead(x, y, gm.map1);
+                        paintMap();*/
                     }
                     System.out.println("Single " + gm.singleDeck + "\n Two " + gm.twoDeck + "\n Three " + gm.threeDeck + "\n Four " + gm.fourDeck + "\n");
                 } else {
@@ -179,7 +183,7 @@ public class BattleFieldComponent extends JPanel {
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                         turnLabel.setText("Ход противника");
-                        aroundDead(s[0], s[1], gm.map1);
+                        gm.map1=aroundDead(s[0], s[1], gm.map1);
                         paintMap();
                     }
                     else {
@@ -277,6 +281,7 @@ public class BattleFieldComponent extends JPanel {
                                     map[i][y - 1] = 2;
                                 } catch (IndexOutOfBoundsException e) {
                                 }
+                                continue;
                             case 0:
                                 try {
                                     map[i][y] = 2;
@@ -1331,7 +1336,7 @@ public class BattleFieldComponent extends JPanel {
     private void paintMap() {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-                switch (gm.map1[i][j]) {
+               /* switch (gm.map1[i][j]) {
                     case 0:
                         otherCells[i][j].setBackground(Color.WHITE);
                         continue;
@@ -1344,8 +1349,8 @@ public class BattleFieldComponent extends JPanel {
                     case 3:
                         otherCells[i][j].setBackground(Color.red);
                         continue;
-                }
-                switch (gm.map2[i][j]) {
+                }*/
+                switch (gm.map1[i][j]) {
                     case 0:
                         cells[i][j].setBackground(Color.WHITE);
                         continue;
