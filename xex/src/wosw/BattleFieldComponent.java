@@ -118,7 +118,13 @@ public class BattleFieldComponent extends JPanel {
                                 gm.map2[x][y] = 3;
                                 turnLabel.setText("Ваш ход");
                                 gm.map2 = aroundDead(x, y, gm.map2);
-                                paintMap();
+                                for(int i = 0;i<10;i++){
+                                    System.out.println();
+                                    for(int j=0;j<10;j++){
+                                        System.out.print(gm.map2[j][i]);
+                                    }
+                                }
+                                paintMap(gm.map2, cells);
                             }
                             else {
                                 gm.map2[x][y] = 2;
@@ -149,7 +155,7 @@ public class BattleFieldComponent extends JPanel {
 
     public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{       
         serverPort = 4545;
-        address = "172.18.9.158";
+        address = "192.168.137.215";
         
         InetAddress ipAddress = InetAddress.getByName(address);
         socket = new Socket(ipAddress, serverPort);
@@ -176,21 +182,21 @@ public class BattleFieldComponent extends JPanel {
                         gm.map1[s[0]][s[1]] = 3;
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
-                        turnLabel.setText("Ход противника");
+                        changeTurnLabel(false);
                         
                     } else if (strike == 2) {
                         gm.map1[s[0]][s[1]] = 3;
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
-                        turnLabel.setText("Ход противника");
+                        changeTurnLabel(false);
                         gm.map1=aroundDead(s[0], s[1], gm.map1);
-                        paintMap();
+                        paintMap(gm.map1, otherCells);
                     }
                     else {
                         gm.map1[s[0]][s[1]] = 2;
                         yourTurn = true;
                         otherCells[s[0]][s[1]].paintShot();
-                        turnLabel.setText("Ваш ход");
+                        changeTurnLabel(true);
                         break;
                     }
                 } catch (IOException ex) {
@@ -214,45 +220,35 @@ public class BattleFieldComponent extends JPanel {
                     map[x][y - 1] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = x + 1; i < x + 4; i++) {
+                for (int i = x + 1; i < x + 5; i++) {                    
                     try {
-                        switch (map[i][y]) {
-                            case 3:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                            case 0:
-                                try {
-                                    map[i][y] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
-                            case 2:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
+                        if (map[i][y] == 3) {
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
+                        }
+                        if (map[i][y] == 0 || map[i][y] == 2) {
+                            try {
+                                map[i][y] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        break;
                     }
                 }
             }
@@ -269,47 +265,35 @@ public class BattleFieldComponent extends JPanel {
                     map[x][y - 1] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = x - 1; i > x - 4; i--) {
-                    try {
-                        switch (map[i][y]) {
-                            case 3:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                continue;
-                            case 0:
-                                try {
-                                    map[i][y] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
-                            case 2:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
-                        }
-                    } catch (IndexOutOfBoundsException e) {
-                        break;
-                    }
+                for (int i = x - 1; i > x - 5; i--) {                   
+                   try{
+                       if(map[i][y]==3){
+                           try {
+                               map[i][y + 1] = 2;
+                           } catch (IndexOutOfBoundsException e) {
+                           }
+                           try {
+                               map[i][y - 1] = 2;
+                           } catch (IndexOutOfBoundsException e) {
+                           }
+                           continue;
+                       }
+                       if(map[i][y]==0 || map[i][y]==2){
+                           try {
+                               map[i][y] = 2;
+                           } catch (IndexOutOfBoundsException e) {
+                           }
+                           try {
+                               map[i][y + 1] = 2;
+                           } catch (IndexOutOfBoundsException e) {
+                           }
+                           try {
+                               map[i][y - 1] = 2;
+                           } catch (IndexOutOfBoundsException e) {
+                           }
+                           break;
+                       }
+                   }catch(IndexOutOfBoundsException e){}
                 }
             }
         } catch (IndexOutOfBoundsException e) {
@@ -325,9 +309,9 @@ public class BattleFieldComponent extends JPanel {
                     map[x - 1][y] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = y + 1; i < y + 4; i++) {
+                for (int i = y + 1; i < y + 5; i++) {
                     try {
-                        switch (map[x][i]) {
+                        /*switch (map[x][i]) {
                             case 3:
                                 try {
                                     map[x + 1][i] = 2;
@@ -337,6 +321,7 @@ public class BattleFieldComponent extends JPanel {
                                     map[x - 1][i] = 2;
                                 } catch (IndexOutOfBoundsException e) {
                                 }
+                                continue;
                             case 0:
                                 try {
                                     map[x][i] = 2;
@@ -361,10 +346,36 @@ public class BattleFieldComponent extends JPanel {
                                 } catch (IndexOutOfBoundsException e) {
                                 }
                                 break;
+                        }*/
+                        if (map[x][i] == 3) {
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
                         }
-                    } catch (IndexOutOfBoundsException e) {
-                        break;
-                    }
+                        if (map[x][i] == 0 || map[x][i] == 2) {
+                            try {
+                                map[x][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
+                        }
+                        
+                        
+                    } catch (IndexOutOfBoundsException e) {         }
                 }
             }
         } catch (IndexOutOfBoundsException e) {
@@ -380,9 +391,9 @@ public class BattleFieldComponent extends JPanel {
                     map[x - 1][y] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = y - 1; i > y - 4; i--) {
+                for (int i = y - 1; i > y - 5; i--) {
                     try {
-                        switch (map[x][i]) {
+                       /* switch (map[x][i]) {
                             case 3:
                                 try {
                                     map[x + 1][i] = 2;
@@ -392,6 +403,7 @@ public class BattleFieldComponent extends JPanel {
                                     map[x - 1][i] = 2;
                                 } catch (IndexOutOfBoundsException e) {
                                 }
+                                continue;
                             case 0:
                                 try {
                                     map[x][i] = 2;
@@ -416,9 +428,36 @@ public class BattleFieldComponent extends JPanel {
                                 } catch (IndexOutOfBoundsException e) {
                                 }
                                 break;
+                        }*/
+                       
+                                             if (map[x][i] == 3) {
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
+                        }
+                        if (map[x][i] == 0 || map[x][i] == 2) {
+                            try {
+                                map[x][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        break;
+                        
                     }
                 }
             }
@@ -1333,24 +1372,24 @@ public class BattleFieldComponent extends JPanel {
             }
         }
     
-    private void paintMap() {
+    private void paintMap(int[][] map, Cell[][] cell) {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-                switch (gm.map1[i][j]) {
+                switch (map[i][j]) {
                     case 0:
-                        otherCells[i][j].setBackground(Color.WHITE);
+                        cell[i][j].setBackground(Color.WHITE);
                         continue;
                     case 1:
-                        otherCells[i][j].setBackground(Color.DARK_GRAY);
+                        cell[i][j].setBackground(Color.DARK_GRAY);
                         continue;
                     case 2:
-                        otherCells[i][j].paintShot();
+                        cell[i][j].paintShot();
                         continue;
                     case 3:
-                        otherCells[i][j].setBackground(Color.red);
+                        cell[i][j].setBackground(Color.red);
                         continue;
                 }
-                switch (gm.map2[i][j]) {
+                /*switch (gm.map2[i][j]) {
                     case 0:
                         cells[i][j].setBackground(Color.WHITE);
                         continue;
@@ -1363,7 +1402,7 @@ public class BattleFieldComponent extends JPanel {
                     case 3:
                         cells[i][j].setBackground(Color.red);
                         continue;
-                }
+                }*/
 
             }
         }
