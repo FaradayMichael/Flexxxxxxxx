@@ -13,7 +13,6 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  *
  */
@@ -26,28 +25,28 @@ public class BattleFieldComponent extends JPanel {
     public Cell[][] cells;
     private Cell[][] otherCells;
     private JLabel turnLabel;
-    
-    private boolean startGame;
+
+    private static boolean startGame;
     private boolean yourTurn;
-    
+
     private int serverPort;
-    private String address;
+    private String address = "172.18.9.159";
     private Socket socket;
     private ObjectOutputStream os;
     private ObjectInputStream in;
-    
+
     public BattleFieldComponent(GameMap gm1, int fieldWidth, int fieldHeight) throws IOException {
         gm = gm1;
         startGame = false;
         int rowCount = gm.MAP_WIDTH;
         int columnCount = gm.MAP_HEIGHT;
         setLayout(new GridLayout(rowCount, columnCount));
-        
+
         this.componentWidth = fieldWidth;
         this.componentHeight = fieldHeight;
 
-        int cellSizeByWidth = fieldWidth/columnCount;
-        int cellSizeByHeight = fieldHeight/rowCount;
+        int cellSizeByWidth = fieldWidth / columnCount;
+        int cellSizeByHeight = fieldHeight / rowCount;
         cellSize = cellSizeByWidth < cellSizeByHeight ? cellSizeByWidth : cellSizeByHeight;
 
         cells = new Cell[rowCount][columnCount];
@@ -63,8 +62,8 @@ public class BattleFieldComponent extends JPanel {
 
         addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e){
-                try { 
+            public void mousePressed(MouseEvent e) {
+                try {
                     clickOnCell(e);
                 } catch (IOException ex) {
                     Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
@@ -90,8 +89,8 @@ public class BattleFieldComponent extends JPanel {
                         if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) {
                             paintShipsRed();
                         }
-                        
-                       /* gm.map1[1][1]=3;
+
+                        /* gm.map1[1][1]=3;
                         gm.map1=aroundDead(x, y, gm.map1);
                         paintMap();*/
                     }
@@ -118,15 +117,14 @@ public class BattleFieldComponent extends JPanel {
                                 gm.map2[x][y] = 3;
                                 turnLabel.setText("Ваш ход");
                                 gm.map2 = aroundDead(x, y, gm.map2);
-                                for(int i = 0;i<10;i++){
+                                for (int i = 0; i < 10; i++) {
                                     System.out.println();
-                                    for(int j=0;j<10;j++){
+                                    for (int j = 0; j < 10; j++) {
                                         System.out.print(gm.map2[j][i]);
                                     }
                                 }
                                 paintMap(gm.map2, cells);
-                            }
-                            else {
+                            } else {
                                 gm.map2[x][y] = 2;
                                 turnLabel.setText("Ход противника");
                                 yourTurn = false;
@@ -152,26 +150,42 @@ public class BattleFieldComponent extends JPanel {
         }
     }
 
-
-    public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{       
+    public void startGame() throws UnknownHostException, IOException, ClassNotFoundException {
         serverPort = 4545;
-        address = "192.168.137.215";
-        
+
         InetAddress ipAddress = InetAddress.getByName(address);
         socket = new Socket(ipAddress, serverPort);
-        
+
         os = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
         os.writeObject(gm);
         os.flush();
+
+        turnLabel.setText("Ожидание противника");
+
         yourTurn = in.readBoolean();
-        if(!yourTurn){
+        if (!yourTurn) {
+            if (in.readBoolean()) {
+                startGame = true;
+                changeTurnLabel(yourTurn);
+            }
             waitEnemyTurn();
+        } else {
+
+            new Thread(() -> {
+                try {
+                    if (in.readBoolean()) {
+                        startGame = true;
+                        changeTurnLabel(yourTurn);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }).start();
         }
-        startGame = true;
-        changeTurnLabel(yourTurn);
+
     }
-    
+
     private void waitEnemyTurn() throws IOException, ClassNotFoundException {
         new Thread(() -> {
             while (true) {
@@ -183,16 +197,15 @@ public class BattleFieldComponent extends JPanel {
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                         changeTurnLabel(false);
-                        
+
                     } else if (strike == 2) {
                         gm.map1[s[0]][s[1]] = 3;
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                         changeTurnLabel(false);
-                        gm.map1=aroundDead(s[0], s[1], gm.map1);
+                        gm.map1 = aroundDead(s[0], s[1], gm.map1);
                         paintMap(gm.map1, otherCells);
-                    }
-                    else {
+                    } else {
                         gm.map1[s[0]][s[1]] = 2;
                         yourTurn = true;
                         otherCells[s[0]][s[1]].paintShot();
@@ -220,7 +233,7 @@ public class BattleFieldComponent extends JPanel {
                     map[x][y - 1] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = x + 1; i < x + 5; i++) {                    
+                for (int i = x + 1; i < x + 5; i++) {
                     try {
                         if (map[i][y] == 3) {
                             try {
@@ -265,35 +278,36 @@ public class BattleFieldComponent extends JPanel {
                     map[x][y - 1] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = x - 1; i > x - 5; i--) {                   
-                   try{
-                       if(map[i][y]==3){
-                           try {
-                               map[i][y + 1] = 2;
-                           } catch (IndexOutOfBoundsException e) {
-                           }
-                           try {
-                               map[i][y - 1] = 2;
-                           } catch (IndexOutOfBoundsException e) {
-                           }
-                           continue;
-                       }
-                       if(map[i][y]==0 || map[i][y]==2){
-                           try {
-                               map[i][y] = 2;
-                           } catch (IndexOutOfBoundsException e) {
-                           }
-                           try {
-                               map[i][y + 1] = 2;
-                           } catch (IndexOutOfBoundsException e) {
-                           }
-                           try {
-                               map[i][y - 1] = 2;
-                           } catch (IndexOutOfBoundsException e) {
-                           }
-                           break;
-                       }
-                   }catch(IndexOutOfBoundsException e){}
+                for (int i = x - 1; i > x - 5; i--) {
+                    try {
+                        if (map[i][y] == 3) {
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
+                        }
+                        if (map[i][y] == 0 || map[i][y] == 2) {
+                            try {
+                                map[i][y] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
+                        }
+                    } catch (IndexOutOfBoundsException e) {
+                    }
                 }
             }
         } catch (IndexOutOfBoundsException e) {
@@ -373,9 +387,9 @@ public class BattleFieldComponent extends JPanel {
                             }
                             break;
                         }
-                        
-                        
-                    } catch (IndexOutOfBoundsException e) {         }
+
+                    } catch (IndexOutOfBoundsException e) {
+                    }
                 }
             }
         } catch (IndexOutOfBoundsException e) {
@@ -393,7 +407,7 @@ public class BattleFieldComponent extends JPanel {
                 }
                 for (int i = y - 1; i > y - 5; i--) {
                     try {
-                       /* switch (map[x][i]) {
+                        /* switch (map[x][i]) {
                             case 3:
                                 try {
                                     map[x + 1][i] = 2;
@@ -429,8 +443,8 @@ public class BattleFieldComponent extends JPanel {
                                 }
                                 break;
                         }*/
-                       
-                                             if (map[x][i] == 3) {
+
+                        if (map[x][i] == 3) {
                             try {
                                 map[x + 1][i] = 2;
                             } catch (IndexOutOfBoundsException e) {
@@ -457,7 +471,7 @@ public class BattleFieldComponent extends JPanel {
                             break;
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        
+
                     }
                 }
             }
@@ -513,30 +527,29 @@ public class BattleFieldComponent extends JPanel {
         } catch (IndexOutOfBoundsException e) {
         }
 
-
         return map;
     }
-    
-    public void setGm(GameMap f){
+
+    public void setGm(GameMap f) {
         gm = f;
     }
-    
-    public void setCells(Cell[][] j){
+
+    public void setCells(Cell[][] j) {
         otherCells = j;
     }
-    
-    public Cell[][] getCells(){
+
+    public Cell[][] getCells() {
         return cells;
     }
-    
-    private void changeTurnLabel(boolean t){
-        if(t){
+
+    private void changeTurnLabel(boolean t) {
+        if (t) {
             turnLabel.setText("Ваш ход");
-        }else{
+        } else {
             turnLabel.setText("Ход противника");
         }
     }
-    
+
     public void setTurnLabel(JLabel turnLabel) {
         this.turnLabel = turnLabel;
     }
@@ -564,11 +577,11 @@ public class BattleFieldComponent extends JPanel {
         }
         return 500;
     }
-    
+
     private int getJ(MouseEvent e) {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
- 
+
         boolean clickedInWorkspace = x >= 0 && y >= 0 && x < componentWidth && y < componentHeight;
 
         if (clickedInWorkspace) {
@@ -576,7 +589,7 @@ public class BattleFieldComponent extends JPanel {
         }
         return 500;
     }
-    
+
     private boolean checkPaintPane(int x, int y) {
         if (x == 0 && y == 0) {
             if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y + 1] == 0) {
@@ -1365,13 +1378,13 @@ public class BattleFieldComponent extends JPanel {
     private void paintAllBlack() {
         for (int y = 0; y < gm.MAP_WIDTH; y++) {
             for (int x = 0; x < gm.MAP_WIDTH; x++) {
-                if(gm.map1[x][y]==1){
+                if (gm.map1[x][y] == 1) {
                     cells[x][y].setBackground(Color.DARK_GRAY);
                 }
             }
-            }
         }
-    
+    }
+
     private void paintMap(int[][] map, Cell[][] cell) {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
@@ -1407,8 +1420,8 @@ public class BattleFieldComponent extends JPanel {
             }
         }
     }
-    
-    public GameMap getGm(){
+
+    public GameMap getGm() {
         return gm;
     }
-    }
+}
