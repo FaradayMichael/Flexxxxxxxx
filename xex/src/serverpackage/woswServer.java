@@ -20,22 +20,26 @@ public class woswServer {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         int port = 4545;
-        
+
         boolean turn = true;
-        
+
         ServerSocket ss = new ServerSocket(port);
+
         
+        //1
         Socket socket1 = ss.accept();
         System.out.println("Join1");
-        
+
         ObjectInputStream in1 = new ObjectInputStream(socket1.getInputStream());
         ObjectOutputStream out1 = new ObjectOutputStream(socket1.getOutputStream());
-        
+
         GameMap gm1 = (GameMap) in1.readObject();
         out1.writeBoolean(turn);
         out1.flush();
         System.out.println("Ready 1");
         
+        
+        //2
         Socket socket2 = ss.accept();
         System.out.println("Join2");
 
@@ -47,14 +51,20 @@ public class woswServer {
         out2.flush();
         System.out.println("Ready 2");
         
+        
+        
+        out1.writeBoolean(true);
+        out1.flush();
+        out2.writeBoolean(true);
+        out2.flush();
+
         //0 - None
         //1 - Ship
         //2 - Shot
         //3 - ShotInShip
-         mapPlayer1 = gm1.map1;
-         mapPlayer2 = gm2.map1;
-           
-        
+        mapPlayer1 = gm1.map1;
+        mapPlayer2 = gm2.map1;
+
         new Thread(() -> {
             int numPlayerTurn = 1;
             while (true) {
@@ -112,7 +122,7 @@ public class woswServer {
                             }
                             out1.writeObject(pos);
                             out1.flush();
-                        }else{
+                        } else {
                             mapPlayer1[pos[0]][pos[1]] = 2;
                             numPlayerTurn = 1;
                             out2.writeInt(0);
@@ -145,51 +155,41 @@ public class woswServer {
                     map[x][y - 1] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = x + 1; i < x + 4; i++) {
+                for (int i = x + 1; i < x + 5; i++) {
                     try {
-                        switch (map[i][y]) {
-                            case 3:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                            case 0:
-                                try {
-                                    map[i][y] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
-                            case 2:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
+                        if (map[i][y] == 3) {
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
+                        }
+                        if (map[i][y] == 0 || map[i][y] == 2) {
+                            try {
+                                map[i][y] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        break;
                     }
                 }
             }
         } catch (IndexOutOfBoundsException e) {
         }
-        
+
         try {
             if (map[x - 1][y] == 3) {
                 try {
@@ -200,53 +200,41 @@ public class woswServer {
                     map[x][y - 1] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = x - 1; i > x - 4; i--) {
+                for (int i = x - 1; i > x - 5; i--) {
                     try {
-                        switch (map[i][y]) {
-                            case 3:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                            case 0:
-                                try {
-                                    map[i][y] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
-                            case 2:
-                                try {
-                                    map[i][y + 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[i][y - 1] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
+                        if (map[i][y] == 3) {
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
+                        }
+                        if (map[i][y] == 0 || map[i][y] == 2) {
+                            try {
+                                map[i][y] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y + 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[i][y - 1] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        break;
                     }
                 }
             }
         } catch (IndexOutOfBoundsException e) {
         }
-        
-        
-        
+
         try {
             if (map[x][y + 1] == 3) {
                 try {
@@ -257,51 +245,42 @@ public class woswServer {
                     map[x - 1][y] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = y + 1; i < y + 4; i++) {
+                for (int i = y + 1; i < y + 5; i++) {
                     try {
-                        switch (map[x][i]) {
-                            case 3:
-                                try {
-                                    map[x + 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x - 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                            case 0:
-                                try {
-                                    map[x][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x + 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x - 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
-                            case 2:
-                                try {
-                                    map[x + 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x - 1][y] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
+                        if (map[x][i] == 3) {
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
                         }
+                        if (map[x][i] == 0 || map[x][i] == 2) {
+                            try {
+                                map[x][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
+                        }
+
                     } catch (IndexOutOfBoundsException e) {
-                        break;
                     }
                 }
             }
         } catch (IndexOutOfBoundsException e) {
         }
-        
+
         try {
             if (map[x][y - 1] == 3) {
                 try {
@@ -312,53 +291,94 @@ public class woswServer {
                     map[x - 1][y] = 2;
                 } catch (IndexOutOfBoundsException e) {
                 }
-                for (int i = y - 1; i > y - 4; i--) {
+                for (int i = y - 1; i > y - 5; i--) {
                     try {
-                        switch (map[x][i]) {
-                            case 3:
-                                try {
-                                    map[x + 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x - 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                            case 0:
-                                try {
-                                    map[x][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x + 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x - 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
-                            case 2:
-                                try {
-                                    map[x + 1][i] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                try {
-                                    map[x - 1][y] = 2;
-                                } catch (IndexOutOfBoundsException e) {
-                                }
-                                break;
+                        if (map[x][i] == 3) {
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            continue;
+                        }
+                        if (map[x][i] == 0 || map[x][i] == 2) {
+                            try {
+                                map[x][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x + 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            try {
+                                map[x - 1][i] = 2;
+                            } catch (IndexOutOfBoundsException e) {
+                            }
+                            break;
                         }
                     } catch (IndexOutOfBoundsException e) {
-                        break;
+
                     }
                 }
             }
         } catch (IndexOutOfBoundsException e) {
         }
+
+        try {
+            if (map[x + 1][y + 1] == 0 || map[x + 1][y + 1] == 2) {
+                map[x + 1][y + 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x + 1][y - 1] == 0 || map[x + 1][y - 1] == 2) {
+                map[x + 1][y - 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x + 1][y] == 0 || map[x + 1][y] == 2) {
+                map[x + 1][y] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x - 1][y - 1] == 0 || map[x - 1][y - 1] == 2) {
+                map[x - 1][y - 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x - 1][y + 1] == 0 || map[x - 1][y + 1] == 2) {
+                map[x - 1][y + 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x - 1][y] == 0 || map[x - 1][y] == 2) {
+                map[x - 1][y] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x][y + 1] == 0 || map[x][y + 1] == 2) {
+                map[x][y + 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        try {
+            if (map[x][y - 1] == 0 || map[x][y - 1] == 2) {
+                map[x][y - 1] = 2;
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+
         return map;
     }
-    
+
     private static boolean isKill(int x, int y, int[][] map) {
         boolean f1;
         boolean f2;
@@ -388,8 +408,7 @@ public class woswServer {
         if (f1 && f2 && f3 && f4) {
             return true;
         }
-        
-        
+
         try {
             f1 = map[x + 1][y] == 1;
         } catch (IndexOutOfBoundsException e) {
@@ -414,57 +433,57 @@ public class woswServer {
         if (f1 || f2 || f3 || f4) {
             return false;
         }
-        
+
         int s = 1;
-        int i,j;
+        int i;
         for (i = x + 1; i < x + 4; i++) {
             try {
-                switch (map[i][y]) {
-                    case 0:
-                        break;
-                    case 2:
-                        break;
-                    case 1:
-                        return false;
-                    case 3:
-                        s++;
+                if (map[i][y] == 0 || map[i][y] == 2) {
+                    break;
+                }
+                if (map[i][y] == 3) {
+                    s++;
+                    continue;
+                }
+                if (map[i][y] == 1) {
+                    return false;
                 }
             } catch (IndexOutOfBoundsException e) {
                 break;
             }
         }
-        for (i = x - 1; i > x - 4; i--){
+        for (i = x - 1; i > x - 4; i--) {
             try {
-                switch (map[i][y]) {
-                    case 0:
-                        break;
-                    case 2:
-                        break;
-                    case 1:
-                        return false;
-                    case 3:
-                        s++;
+                if (map[i][y] == 0 || map[i][y] == 2) {
+                    break;
+                }
+                if (map[i][y] == 3) {
+                    s++;
+                    continue;
+                }
+                if (map[i][y] == 1) {
+                    return false;
                 }
             } catch (IndexOutOfBoundsException e) {
                 break;
             }
         }
-        if(s!=1){
+        if (s != 1) {
             return true;
-        } 
+        }
 
         s = 1;
         for (i = y + 1; i < y + 4; i++) {
             try {
-                switch (map[x][i]) {
-                    case 0:
-                        break;
-                    case 2:
-                        break;
-                    case 1:
-                        return false;
-                    case 3:
-                        s++;
+                if (map[x][i] == 0 || map[x][i] == 2) {
+                    break;
+                }
+                if (map[x][i] == 3) {
+                    s++;
+                    continue;
+                }
+                if (map[x][i] == 1) {
+                    return false;
                 }
             } catch (IndexOutOfBoundsException e) {
                 break;
@@ -472,15 +491,15 @@ public class woswServer {
         }
         for (i = y - 1; i > y - 4; i--) {
             try {
-                switch (map[x][i]) {
-                    case 0:
-                        break;
-                    case 2:
-                        break;
-                    case 1:
-                        return false;
-                    case 3:
-                        s++;
+                if (map[x][i] == 0 || map[x][i] == 2) {
+                    break;
+                }
+                if (map[x][i] == 3) {
+                    s++;
+                    continue;
+                }
+                if (map[x][i] == 1) {
+                    return false;
                 }
             } catch (IndexOutOfBoundsException e) {
                 break;
@@ -489,6 +508,4 @@ public class woswServer {
         return true;
     }
 
-
-    
 }

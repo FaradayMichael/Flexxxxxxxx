@@ -52,6 +52,7 @@ public class BattleFrame extends JFrame {
         readyLabel.setForeground(Color.red);
         readyLabel.setFont(new Font("Arial", Font.BOLD, 15));
         startBtn = new JButton("Найти противника");
+        startBtn.setEnabled(false);
         turnLabel = new JLabel();
         
         p = new JPanel(new BorderLayout());
@@ -108,6 +109,7 @@ public class BattleFrame extends JFrame {
                 if(gm.readyShips()){
                     readyLabel.setForeground(Color.green);
                     readyLabel.setText("Готов");
+                    startBtn.setEnabled(true);
                 } else{
                     readyLabel.setForeground(Color.red);
                     readyLabel.setText("Не готов");
