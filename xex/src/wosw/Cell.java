@@ -38,7 +38,9 @@ public class Cell extends JPanel {
     }
 
     public void paintShot() {
-        getGraphics().fillOval(xOval, yOval, widthOval, heightOval);
+        Graphics g = getGraphics();
+        g.setColor(Color.DARK_GRAY);
+        g.fillOval(xOval, yOval, widthOval, heightOval);
         System.out.println(width+" "+ height);
     }
 
