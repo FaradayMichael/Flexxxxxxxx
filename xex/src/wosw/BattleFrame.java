@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -20,12 +21,15 @@ public class BattleFrame extends JFrame {
     private JButton btnReady;
     private JLabel readyLabel;
     private JButton startBtn;
+    private JMenuBar glsBtn;
     private JLabel turnLabel;
     private BattleFieldComponent myBattleField;
     private BattleFieldComponent enemyBattleField;
-    private JPanel panel;
-    private JPanel p;
-    private JPanel p1;
+    private JPanel gamePanel;
+    private JPanel mainPanel;
+    private JPanel toolPanel;
+    private JPanel nortPanel;
+    private JPanel glsPanel;
 
     public BattleFrame(GameMap gm2) throws IOException {
         this.setTitle("Xex");
@@ -48,31 +52,66 @@ public class BattleFrame extends JFrame {
         }};
 
         btnReady = new JButton("Готов");
+
         readyLabel = new JLabel("Не готов");
         readyLabel.setForeground(Color.red);
         readyLabel.setFont(new Font("Arial", Font.BOLD, 15));
+
         startBtn = new JButton("Найти противника");
         startBtn.setEnabled(false);
-        turnLabel = new JLabel();
-        
-        p = new JPanel(new BorderLayout());
-        p1 = new JPanel(new FlowLayout(3));
 
-        p1.add(new JLabel("                         "));
-        p1.add(btnReady);
-        p1.add(readyLabel);
-        p1.add(startBtn);
-        p1.add(turnLabel);
+        turnLabel = new JLabel();
+
+        toolPanel = new JPanel(new FlowLayout(3));
+
+        toolPanel.add(new JLabel("                         "));
+        toolPanel.add(btnReady);
+        toolPanel.add(readyLabel);
+        toolPanel.add(startBtn);
+        toolPanel.add(turnLabel);
+
+
+        ImageIcon shotIng = new ImageIcon(ImageIO.read(getClass().getResource("/wosw/res/shot.png")));
+        ImageIcon shipIng = new ImageIcon(ImageIO.read(getClass().getResource("/wosw/res/ship.png")));
+        ImageIcon killIng = new ImageIcon(ImageIO.read(getClass().getResource("/wosw/res/kill.png")));
+
+        JMenuItem shotItem = new JMenuItem(" - Выстрел", shotIng);
+        JMenuItem shipItem = new JMenuItem(" - Корабль", shipIng);
+        JMenuItem killItem = new JMenuItem(" - Попадание", killIng);
+
+        JMenu glsMenu = new JMenu("Глоссарий");
+        glsMenu.add(shotItem);
+        glsMenu.add(shipItem);
+        glsMenu.add(killItem);
+        glsMenu.addSeparator();
+        glsMenu.add(new JLabel("Однопалубных - 4"));
+        glsMenu.add(new JLabel("Двухпалубных - 3"));
+        glsMenu.add(new JLabel("Трехпалубных - 2"));
+        glsMenu.add(new JLabel("Четырехпалубных - 1"));
+
+        glsBtn = new JMenuBar();
+        glsBtn.add(glsMenu);
+        glsBtn.setBackground(Color.lightGray);
+
+
+        glsPanel = new JPanel(new FlowLayout(2));
+        glsPanel.add(glsBtn);
+        glsPanel.add(new JLabel("                         "));
+
+        nortPanel = new JPanel(new BorderLayout());
+        nortPanel.add(toolPanel, BorderLayout.WEST);
+        nortPanel.add(glsPanel, BorderLayout.EAST);
         
-        panel = new JPanel() {{
+        gamePanel = new JPanel() {{
             setLayout(new FlowLayout());
         }};
-        panel.add(myBattleField);
-        panel.add(centerPanel);
-        panel.add(enemyBattleField);
-        
-        p.add(p1, BorderLayout.NORTH);
-        p.add(panel, BorderLayout.CENTER);
+        gamePanel.add(myBattleField);
+        gamePanel.add(centerPanel);
+        gamePanel.add(enemyBattleField);
+
+        mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(nortPanel, BorderLayout.NORTH);
+        mainPanel.add(gamePanel, BorderLayout.CENTER);
         
 
         
@@ -97,7 +136,7 @@ public class BattleFrame extends JFrame {
             }
         });
 
-        this.add(p);
+        this.add(mainPanel);
     }
     
     private void paintReadyButton(){
