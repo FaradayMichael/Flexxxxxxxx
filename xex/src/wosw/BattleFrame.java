@@ -91,9 +91,7 @@ public class BattleFrame extends JFrame {
                     enemyBattleField.setTurnLabel(turnLabel);
                     enemyBattleField.setCells(myBattleField.getCells());
                     enemyBattleField.startGame();
-                } catch (IOException ex) {
-                    Logger.getLogger(BattleFrame.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (ClassNotFoundException ex) {
+                } catch (IOException | ClassNotFoundException ex) {
                     Logger.getLogger(BattleFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
