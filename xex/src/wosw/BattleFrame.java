@@ -39,8 +39,8 @@ public class BattleFrame extends JFrame {
 
         this.gm = gm2;
 
-        myBattleField = new BattleFieldComponent(gm, 500, 500);
-        enemyBattleField = new BattleFieldComponent(gm, 500, 500);
+        myBattleField = new BattleFieldComponent(gm, 500, 500, true);
+        enemyBattleField = new BattleFieldComponent(gm, 500, 500, false);
 
         JPanel centerPanel = new JPanel() {{
             setLayout(new FlowLayout(FlowLayout.CENTER));

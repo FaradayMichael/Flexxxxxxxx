@@ -19,30 +19,32 @@ import java.util.logging.Logger;
  */
 public class BattleFieldComponent extends JPanel {
 
-    public int cellSize;
-    public int componentWidth;
-    public int componentHeight;
+    private int cellSize;
+    private int componentWidth;
+    private int componentHeight;
     private GameMap gm;
-    public Cell[][] cells;
+    private Cell[][] cells;
     private Cell[][] otherCells;
     private JLabel turnLabel;
-    
+
+    private boolean isMyField;
     private boolean startGame;
     private boolean yourTurn;
-    
+
     private int serverPort;
     private String address;
     private Socket socket;
     private ObjectOutputStream os;
     private ObjectInputStream in;
-    
-    public BattleFieldComponent(GameMap gm1, int fieldWidth, int fieldHeight) throws IOException {
+
+    public BattleFieldComponent(GameMap gm1, int fieldWidth, int fieldHeight, boolean isMyField) throws IOException {
         gm = gm1;
         startGame = false;
+        this.isMyField = isMyField;
         int rowCount = gm.MAP_WIDTH;
         int columnCount = gm.MAP_HEIGHT;
         setLayout(new GridLayout(rowCount, columnCount));
-        
+
         this.componentWidth = fieldWidth;
         this.componentHeight = fieldHeight;
 
@@ -64,7 +66,7 @@ public class BattleFieldComponent extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e){
-                try { 
+                try {
                     clickOnCell(e);
                 } catch (IOException ex) {
                     Logger.getLogger(BattleFieldComponent.class.getName()).log(Level.SEVERE, null, ex);
@@ -82,18 +84,11 @@ public class BattleFieldComponent extends JPanel {
         if (jp != null) {
             if (e.getButton() == MouseEvent.BUTTON1) {
                 if (!startGame) {
-                    if (checkPaintPane(x, y)) {
-                        //jp.setBackground(Color.DARK_GRAY);
+                    if(isMyField){
                         gm.map1[x][y] = 1;
                         gm.checkShips();
                         paintAllBlack();
-                        if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) {
-                            paintShipsRed();
-                        }
-                        
-                       /* gm.map1[1][1]=3;
-                        gm.map1=aroundDead(x, y, gm.map1);
-                        paintMap();*/
+                        if (gm.singleDeck > 4 || gm.twoDeck > 3 || gm.threeDeck > 2 || gm.fourDeck > 1) paintShipsRed();
                     }
                     System.out.println("Single " + gm.singleDeck + "\n Two " + gm.twoDeck + "\n Three " + gm.threeDeck + "\n Four " + gm.fourDeck + "\n");
                 } else {
@@ -147,13 +142,13 @@ public class BattleFieldComponent extends JPanel {
     }
 
 
-    public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{       
+    public void startGame() throws UnknownHostException, IOException, ClassNotFoundException{
         serverPort = 4545;
         address = "172.18.9.158";
-        
+
         InetAddress ipAddress = InetAddress.getByName(address);
         socket = new Socket(ipAddress, serverPort);
-        
+
         os = new ObjectOutputStream(socket.getOutputStream());
         in = new ObjectInputStream(socket.getInputStream());
         os.writeObject(gm);
@@ -165,7 +160,7 @@ public class BattleFieldComponent extends JPanel {
         startGame = true;
         changeTurnLabel(yourTurn);
     }
-    
+
     private void waitEnemyTurn() throws IOException, ClassNotFoundException {
         new Thread(() -> {
             while (true) {
@@ -177,7 +172,7 @@ public class BattleFieldComponent extends JPanel {
                         yourTurn = false;
                         otherCells[s[0]][s[1]].setBackground(Color.red);
                         turnLabel.setText("Ход противника");
-                        
+
                     } else if (strike == 2) {
                         gm.map1[s[0]][s[1]] = 3;
                         yourTurn = false;
@@ -477,19 +472,19 @@ public class BattleFieldComponent extends JPanel {
 
         return map;
     }
-    
+
     public void setGm(GameMap f){
         gm = f;
     }
-    
+
     public void setCells(Cell[][] j){
         otherCells = j;
     }
-    
+
     public Cell[][] getCells(){
         return cells;
     }
-    
+
     private void changeTurnLabel(boolean t){
         if(t){
             turnLabel.setText("Ваш ход");
@@ -497,7 +492,7 @@ public class BattleFieldComponent extends JPanel {
             turnLabel.setText("Ход противника");
         }
     }
-    
+
     public void setTurnLabel(JLabel turnLabel) {
         this.turnLabel = turnLabel;
     }
@@ -525,11 +520,11 @@ public class BattleFieldComponent extends JPanel {
         }
         return 500;
     }
-    
+
     private int getJ(MouseEvent e) {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
- 
+
         boolean clickedInWorkspace = x >= 0 && y >= 0 && x < componentWidth && y < componentHeight;
 
         if (clickedInWorkspace) {
@@ -537,336 +532,21 @@ public class BattleFieldComponent extends JPanel {
         }
         return 500;
     }
-    
-    private boolean checkPaintPane(int x, int y) {
-        if (x == 0 && y == 0) {
-            if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y + 1] == 0) {
-                return true;
-            } else {
-                if (gm.map1[x + 1][y + 1] == 1) {
-                    return false;
-                } else {
-                    if (gm.map1[x + 1][y] == 1) {
-                        int tmp = x + 1;
-                        int shipSize = 1;
-                        while (gm.map1[tmp][y] == 1) {
-                            tmp++;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    } else if (gm.map1[x][y + 1] == 1) {
-                        int tmp = y + 1;
-                        int shipSize = 1;
-                        while (gm.map1[x][tmp] == 1) {
-                            tmp++;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    }
-                }
-            }
-        } else if (x == 9 && y == 0) {
-            if (gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0) {
-                return true;
-            } else {
-                if (gm.map1[x - 1][y + 1] == 1) {
-                    return false;
-                } else {
-                    if (gm.map1[x - 1][y] == 1) {
-                        int tmp = x - 1;
-                        int shipSize = 1;
-                        while (gm.map1[tmp][y] == 1) {
-                            tmp--;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    } else if (gm.map1[x][y + 1] == 1) {
-                        int tmp = y + 1;
-                        int shipSize = 1;
-                        while (gm.map1[x][tmp] == 1) {
-                            tmp++;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    }
-                }
-            }
-        } else if (x == 0 && y == 9) {
-            if (gm.map1[x + 1][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y - 1] == 0) {
-                if (gm.singleDeck < 4) {
-                    gm.singleDeck++;
+    /*
+        private boolean checkPaintPane(int x, int y) {
+            if (x == 0 && y == 0) {
+                if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y + 1] == 0) {
                     return true;
                 } else {
-                    return false;
-                }
-            } else {
-                if (gm.map1[x + 1][y - 1] == 1) {
-                    return false;
-                } else {
-                    if (gm.map1[x + 1][y] == 1) {
-                        int tmp = x + 1;
-                        int shipSize = 1;
-                        while (gm.map1[tmp][y] == 1) {
-                            tmp++;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    } else if (gm.map1[x][y - 1] == 1) {
-                        int tmp = y - 1;
-                        int shipSize = 1;
-                        while (gm.map1[x][tmp] == 1) {
-                            tmp--;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    }
-                }
-            }
-        } else if (x == 9 && y == 9) {
-            if (gm.map1[x - 1][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0) {
-                return true;
-            } else {
-                if (gm.map1[x - 1][y - 1] == 1) {
-                    return false;
-                } else {
-                    if (gm.map1[x - 1][y] == 1) {
-                        int tmp = x - 1;
-                        int shipSize = 1;
-                        while (gm.map1[tmp][y] == 1) {
-                            tmp--;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    } else if (gm.map1[x][y - 1] == 1) {
-                        int tmp = y - 1;
-                        int shipSize = 1;
-                        while (gm.map1[x][tmp] == 1) {
-                            tmp--;
-                            shipSize++;
-                        }
-                        if (shipSize > 4) {
-                            return false;
-                        }
-                        switch (shipSize) {
-                            case 2:
-                                return true;
-                            case 3:
-                                return true;
-                            case 4:
-                                return true;
-                        }
-                    }
-                }
-            }
-        } else {
-            if (x == 0) {
-                if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y - 1] == 0) {
-                    return true;
-                } else {
-                    if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x + 1][y - 1] == 1) {
+                    if (gm.map1[x + 1][y + 1] == 1) {
                         return false;
                     } else {
-                        if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
-                            int tmp = y + 1;
-                            int shipSize = 1;
-                            while (gm.map1[x][tmp] == 1) {
-                                tmp++;
-                                shipSize++;
-                                if (tmp > 9) {
-                                    break;
-                                }
-                            }
-                            tmp = y - 1;
-                            while (gm.map1[x][tmp] == 1) {
-                                tmp--;
-                                shipSize++;
-                                if (tmp < 0) {
-                                    break;
-                                }
-                            }
-                            if (shipSize > 4) {
-                                return false;
-                            }
-                            switch (shipSize) {
-                                case 2:
-                                    return true;
-                                case 3:
-                                    return true;
-                                case 4:
-                                    return true;
-                            }
-                        } else if (gm.map1[x + 1][y] == 1) {
+                        if (gm.map1[x + 1][y] == 1) {
                             int tmp = x + 1;
                             int shipSize = 1;
                             while (gm.map1[tmp][y] == 1) {
                                 tmp++;
                                 shipSize++;
-                            }
-                            if (shipSize > 4) {
-                                return false;
-                            }
-                            switch (shipSize) {
-                                case 2:
-                                    return true;
-                                case 3:
-                                    return true;
-                                case 4:
-                                    return true;
-                            }
-                        }
-                    }
-                }
-            } else if (x == 9) {
-                if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
-                    return true;
-                } else {
-                    if (gm.map1[x - 1][y + 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
-                        return false;
-                    } else {
-                        if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
-                            int tmp = y + 1;
-                            int shipSize = 1;
-                            while (gm.map1[x][tmp] == 1) {
-                                tmp++;
-                                shipSize++;
-                                if (tmp > 9) {
-                                    break;
-                                }
-                            }
-                            tmp = y - 1;
-                            while (gm.map1[x][tmp] == 1) {
-                                tmp--;
-                                shipSize++;
-                                if (tmp < 0) {
-                                    break;
-                                }
-                            }
-                            if (shipSize > 4) {
-                                return false;
-                            }
-                            switch (shipSize) {
-                                case 2:
-                                    return true;
-                                case 3:
-                                    return true;
-                                case 4:
-                                    return true;
-                            }
-                        } else if (gm.map1[x - 1][y] == 1) {
-                            int tmp = x - 1;
-                            int shipSize = 1;
-                            while (gm.map1[tmp][y] == 1) {
-                                tmp--;
-                                shipSize++;
-                            }
-                            if (shipSize > 4) {
-                                return false;
-                            }
-                            switch (shipSize) {
-                                case 2:
-                                    return true;
-                                case 3:
-                                    return true;
-                                case 4:
-                                    return true;
-                            }
-                        }
-                    }
-                }
-            } else if (y == 0) {
-                if (gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x - 1][y + 1] == 0) {
-                    return true;
-                } else {
-                    if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x - 1][y + 1] == 1) {
-                        return false;
-                    } else {
-                        if (gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) {
-                            int tmp = x + 1;
-                            int shipSize = 1;
-                            while (gm.map1[tmp][y] == 1) {
-                                tmp++;
-                                shipSize++;
-                                if (tmp > 9) {
-                                    break;
-                                }
-                            }
-                            tmp = x - 1;
-                            while (gm.map1[tmp][y] == 1) {
-                                tmp--;
-                                shipSize++;
-                                if (tmp < 0) {
-                                    break;
-                                }
                             }
                             if (shipSize > 4) {
                                 return false;
@@ -900,30 +580,116 @@ public class BattleFieldComponent extends JPanel {
                         }
                     }
                 }
-            } else if (y == 9) {
-                if (gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y - 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
+            } else if (x == 9 && y == 0) {
+                if (gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0) {
                     return true;
                 } else {
-                    if (gm.map1[x + 1][y - 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
+                    if (gm.map1[x - 1][y + 1] == 1) {
                         return false;
                     } else {
-                        if (gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) {
+                        if (gm.map1[x - 1][y] == 1) {
+                            int tmp = x - 1;
+                            int shipSize = 1;
+                            while (gm.map1[tmp][y] == 1) {
+                                tmp--;
+                                shipSize++;
+                            }
+                            if (shipSize > 4) {
+                                return false;
+                            }
+                            switch (shipSize) {
+                                case 2:
+                                    return true;
+                                case 3:
+                                    return true;
+                                case 4:
+                                    return true;
+                            }
+                        } else if (gm.map1[x][y + 1] == 1) {
+                            int tmp = y + 1;
+                            int shipSize = 1;
+                            while (gm.map1[x][tmp] == 1) {
+                                tmp++;
+                                shipSize++;
+                            }
+                            if (shipSize > 4) {
+                                return false;
+                            }
+                            switch (shipSize) {
+                                case 2:
+                                    return true;
+                                case 3:
+                                    return true;
+                                case 4:
+                                    return true;
+                            }
+                        }
+                    }
+                }
+            } else if (x == 0 && y == 9) {
+                if (gm.map1[x + 1][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y - 1] == 0) {
+                    if (gm.singleDeck < 4) {
+                        gm.singleDeck++;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    if (gm.map1[x + 1][y - 1] == 1) {
+                        return false;
+                    } else {
+                        if (gm.map1[x + 1][y] == 1) {
                             int tmp = x + 1;
                             int shipSize = 1;
                             while (gm.map1[tmp][y] == 1) {
                                 tmp++;
                                 shipSize++;
-                                if (tmp > 9) {
-                                    break;
-                                }
                             }
-                            tmp = x - 1;
+                            if (shipSize > 4) {
+                                return false;
+                            }
+                            switch (shipSize) {
+                                case 2:
+                                    return true;
+                                case 3:
+                                    return true;
+                                case 4:
+                                    return true;
+                            }
+                        } else if (gm.map1[x][y - 1] == 1) {
+                            int tmp = y - 1;
+                            int shipSize = 1;
+                            while (gm.map1[x][tmp] == 1) {
+                                tmp--;
+                                shipSize++;
+                            }
+                            if (shipSize > 4) {
+                                return false;
+                            }
+                            switch (shipSize) {
+                                case 2:
+                                    return true;
+                                case 3:
+                                    return true;
+                                case 4:
+                                    return true;
+                            }
+                        }
+                    }
+                }
+            } else if (x == 9 && y == 9) {
+                if (gm.map1[x - 1][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0) {
+                    return true;
+                } else {
+                    if (gm.map1[x - 1][y - 1] == 1) {
+                        return false;
+                    } else {
+                        if (gm.map1[x - 1][y] == 1) {
+                            int tmp = x - 1;
+                            int shipSize = 1;
                             while (gm.map1[tmp][y] == 1) {
                                 tmp--;
                                 shipSize++;
-                                if (tmp < 0) {
-                                    break;
-                                }
                             }
                             if (shipSize > 4) {
                                 return false;
@@ -958,13 +724,127 @@ public class BattleFieldComponent extends JPanel {
                     }
                 }
             } else {
-                if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0) {
-                    return true;
-                } else {
-                    if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x - 1][y + 1] == 1 || gm.map1[x + 1][y - 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
-                        return false;
+                if (x == 0) {
+                    if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y - 1] == 0) {
+                        return true;
                     } else {
-                        if ((gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) || (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1)) {
+                        if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x + 1][y - 1] == 1) {
+                            return false;
+                        } else {
+                            if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
+                                int tmp = y + 1;
+                                int shipSize = 1;
+                                while (gm.map1[x][tmp] == 1) {
+                                    tmp++;
+                                    shipSize++;
+                                    if (tmp > 9) {
+                                        break;
+                                    }
+                                }
+                                tmp = y - 1;
+                                while (gm.map1[x][tmp] == 1) {
+                                    tmp--;
+                                    shipSize++;
+                                    if (tmp < 0) {
+                                        break;
+                                    }
+                                }
+                                if (shipSize > 4) {
+                                    return false;
+                                }
+                                switch (shipSize) {
+                                    case 2:
+                                        return true;
+                                    case 3:
+                                        return true;
+                                    case 4:
+                                        return true;
+                                }
+                            } else if (gm.map1[x + 1][y] == 1) {
+                                int tmp = x + 1;
+                                int shipSize = 1;
+                                while (gm.map1[tmp][y] == 1) {
+                                    tmp++;
+                                    shipSize++;
+                                }
+                                if (shipSize > 4) {
+                                    return false;
+                                }
+                                switch (shipSize) {
+                                    case 2:
+                                        return true;
+                                    case 3:
+                                        return true;
+                                    case 4:
+                                        return true;
+                                }
+                            }
+                        }
+                    }
+                } else if (x == 9) {
+                    if (gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
+                        return true;
+                    } else {
+                        if (gm.map1[x - 1][y + 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
+                            return false;
+                        } else {
+                            if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
+                                int tmp = y + 1;
+                                int shipSize = 1;
+                                while (gm.map1[x][tmp] == 1) {
+                                    tmp++;
+                                    shipSize++;
+                                    if (tmp > 9) {
+                                        break;
+                                    }
+                                }
+                                tmp = y - 1;
+                                while (gm.map1[x][tmp] == 1) {
+                                    tmp--;
+                                    shipSize++;
+                                    if (tmp < 0) {
+                                        break;
+                                    }
+                                }
+                                if (shipSize > 4) {
+                                    return false;
+                                }
+                                switch (shipSize) {
+                                    case 2:
+                                        return true;
+                                    case 3:
+                                        return true;
+                                    case 4:
+                                        return true;
+                                }
+                            } else if (gm.map1[x - 1][y] == 1) {
+                                int tmp = x - 1;
+                                int shipSize = 1;
+                                while (gm.map1[tmp][y] == 1) {
+                                    tmp--;
+                                    shipSize++;
+                                }
+                                if (shipSize > 4) {
+                                    return false;
+                                }
+                                switch (shipSize) {
+                                    case 2:
+                                        return true;
+                                    case 3:
+                                        return true;
+                                    case 4:
+                                        return true;
+                                }
+                            }
+                        }
+                    }
+                } else if (y == 0) {
+                    if (gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0 && gm.map1[x + 1][y + 1] == 0 && gm.map1[x - 1][y + 1] == 0) {
+                        return true;
+                    } else {
+                        if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x - 1][y + 1] == 1) {
+                            return false;
+                        } else {
                             if (gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) {
                                 int tmp = x + 1;
                                 int shipSize = 1;
@@ -994,18 +874,46 @@ public class BattleFieldComponent extends JPanel {
                                     case 4:
                                         return true;
                                 }
-                            } else if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
+                            } else if (gm.map1[x][y + 1] == 1) {
                                 int tmp = y + 1;
                                 int shipSize = 1;
                                 while (gm.map1[x][tmp] == 1) {
+                                    tmp++;
+                                    shipSize++;
+                                }
+                                if (shipSize > 4) {
+                                    return false;
+                                }
+                                switch (shipSize) {
+                                    case 2:
+                                        return true;
+                                    case 3:
+                                        return true;
+                                    case 4:
+                                        return true;
+                                }
+                            }
+                        }
+                    }
+                } else if (y == 9) {
+                    if (gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y - 1] == 0 && gm.map1[x + 1][y - 1] == 0 && gm.map1[x - 1][y - 1] == 0) {
+                        return true;
+                    } else {
+                        if (gm.map1[x + 1][y - 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
+                            return false;
+                        } else {
+                            if (gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) {
+                                int tmp = x + 1;
+                                int shipSize = 1;
+                                while (gm.map1[tmp][y] == 1) {
                                     tmp++;
                                     shipSize++;
                                     if (tmp > 9) {
                                         break;
                                     }
                                 }
-                                tmp = y - 1;
-                                while (gm.map1[x][tmp] == 1) {
+                                tmp = x - 1;
+                                while (gm.map1[tmp][y] == 1) {
                                     tmp--;
                                     shipSize++;
                                     if (tmp < 0) {
@@ -1023,15 +931,102 @@ public class BattleFieldComponent extends JPanel {
                                     case 4:
                                         return true;
                                 }
+                            } else if (gm.map1[x][y - 1] == 1) {
+                                int tmp = y - 1;
+                                int shipSize = 1;
+                                while (gm.map1[x][tmp] == 1) {
+                                    tmp--;
+                                    shipSize++;
+                                }
+                                if (shipSize > 4) {
+                                    return false;
+                                }
+                                switch (shipSize) {
+                                    case 2:
+                                        return true;
+                                    case 3:
+                                        return true;
+                                    case 4:
+                                        return true;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y - 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x - 1][y + 1] == 0 && gm.map1[x - 1][y - 1] == 0 && gm.map1[x - 1][y] == 0 && gm.map1[x][y + 1] == 0 && gm.map1[x][y - 1] == 0) {
+                        return true;
+                    } else {
+                        if (gm.map1[x + 1][y + 1] == 1 || gm.map1[x - 1][y + 1] == 1 || gm.map1[x + 1][y - 1] == 1 || gm.map1[x - 1][y - 1] == 1) {
+                            return false;
+                        } else {
+                            if ((gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) || (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1)) {
+                                if (gm.map1[x + 1][y] == 1 || gm.map1[x - 1][y] == 1) {
+                                    int tmp = x + 1;
+                                    int shipSize = 1;
+                                    while (gm.map1[tmp][y] == 1) {
+                                        tmp++;
+                                        shipSize++;
+                                        if (tmp > 9) {
+                                            break;
+                                        }
+                                    }
+                                    tmp = x - 1;
+                                    while (gm.map1[tmp][y] == 1) {
+                                        tmp--;
+                                        shipSize++;
+                                        if (tmp < 0) {
+                                            break;
+                                        }
+                                    }
+                                    if (shipSize > 4) {
+                                        return false;
+                                    }
+                                    switch (shipSize) {
+                                        case 2:
+                                            return true;
+                                        case 3:
+                                            return true;
+                                        case 4:
+                                            return true;
+                                    }
+                                } else if (gm.map1[x][y + 1] == 1 || gm.map1[x][y - 1] == 1) {
+                                    int tmp = y + 1;
+                                    int shipSize = 1;
+                                    while (gm.map1[x][tmp] == 1) {
+                                        tmp++;
+                                        shipSize++;
+                                        if (tmp > 9) {
+                                            break;
+                                        }
+                                    }
+                                    tmp = y - 1;
+                                    while (gm.map1[x][tmp] == 1) {
+                                        tmp--;
+                                        shipSize++;
+                                        if (tmp < 0) {
+                                            break;
+                                        }
+                                    }
+                                    if (shipSize > 4) {
+                                        return false;
+                                    }
+                                    switch (shipSize) {
+                                        case 2:
+                                            return true;
+                                        case 3:
+                                            return true;
+                                        case 4:
+                                            return true;
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+            return false;
         }
-        return false;
-    }
-
+    */
     private void paintShipsRed() {
         for (int y = 0; y < gm.MAP_WIDTH; y++) {
             for (int x = 0; x < gm.MAP_WIDTH; x++) {
@@ -1330,9 +1325,9 @@ public class BattleFieldComponent extends JPanel {
                     cells[x][y].setBackground(Color.DARK_GRAY);
                 }
             }
-            }
         }
-    
+    }
+
     private void paintMap() {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
@@ -1368,8 +1363,8 @@ public class BattleFieldComponent extends JPanel {
             }
         }
     }
-    
+
     public GameMap getGm(){
         return gm;
     }
-    }
+}
