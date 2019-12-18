@@ -43,6 +43,7 @@ public class BattleFrame extends JFrame {
 
         this.gm = gm2;
 
+        //Создание полей
         myBattleField = new BattleFieldComponent(gm, 500, 500, true);
         enemyBattleField = new BattleFieldComponent(gm, 500, 500, false);
 
@@ -138,7 +139,8 @@ public class BattleFrame extends JFrame {
 
         this.add(mainPanel);
     }
-    
+
+    //Кнопка Готов
     private void paintReadyButton(){
                 gm = myBattleField.getGm();
                 gm.checkShips();

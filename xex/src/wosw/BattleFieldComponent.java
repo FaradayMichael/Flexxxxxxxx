@@ -65,6 +65,7 @@ public class BattleFieldComponent extends JPanel {
             }
         }
 
+        //Обработчик клика мыши
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e){
@@ -82,10 +83,10 @@ public class BattleFieldComponent extends JPanel {
         int x = getI(e);
         int y = getJ(e);
         if (jp != null) {
-            if (e.getButton() == MouseEvent.BUTTON1) {
-                if (!startGame) {
-                    if(isMyField){
-                        if (checkPaintPane(x, y)) {
+            if (e.getButton() == MouseEvent.BUTTON1) {//если кликнул ЛКМ
+                if (!startGame) {//Если игра не начата
+                    if(isMyField){//Если кликнул по своему полю
+                        if (checkPaintPane(x, y)) {//Можно ли разместить корабль?
                             gm.map1[x][y] = 1;
                             gm.checkShips();
                             paintAllBlack();
@@ -94,24 +95,26 @@ public class BattleFieldComponent extends JPanel {
                             }
                         }}
                     System.out.println("Single " + gm.singleDeck + "\n Two " + gm.twoDeck + "\n Three " + gm.threeDeck + "\n Four " + gm.fourDeck + "\n");
-                } else {
-                    if (yourTurn) {
-                        if(!isMyField){
-                            if (gm.map2[x][y] != 2 && gm.map2[x][y] != 3) {
+                } else {//Если игра начата
+                    if (yourTurn) {//Если мой ход
+                        if(!isMyField){//если клик не по моему полю
+                            if (gm.map2[x][y] != 2 && gm.map2[x][y] != 3) {//Если клик по пустому месту поля
                                 int[] pos = new int[2];
                                 pos[0] = x;
                                 pos[1] = y;
 
+                                //отправка выстрела
                                 os.writeObject(pos);
                                 os.flush();
 
+                                //Ожидание результатов выстрела от сервера
                                 int strike = in.readInt();
-                                if (strike == 1) {
+                                if (strike == 1) {//Если попал
                                     yourTurn = true;
                                     jp.setBackground(Color.red);
                                     gm.map2[x][y] = 3;
                                     changeTurnLabel(true);
-                                } else if (strike == 2) {
+                                } else if (strike == 2) {//Если убил
                                     yourTurn = true;
                                     jp.setBackground(Color.red);
                                     gm.map2[x][y] = 3;
@@ -119,7 +122,7 @@ public class BattleFieldComponent extends JPanel {
                                     gm.map2 = aroundDead(x, y, gm.map2);
                                     paintMap(gm.map2, cells);
                                 }
-                                else {
+                                else {//Если не попал
                                     gm.map2[x][y] = 2;
                                     changeTurnLabel(false);
                                     yourTurn = false;
@@ -130,7 +133,7 @@ public class BattleFieldComponent extends JPanel {
                     }
                 }
 
-            } else if (e.getButton() == MouseEvent.BUTTON3) {
+            } else if (e.getButton() == MouseEvent.BUTTON3) {//Если кликнул ПКМ
                 if (!startGame) {
                     jp.setBackground(Color.WHITE);
                     gm.map1[x][y] = 0;
@@ -177,6 +180,7 @@ public class BattleFieldComponent extends JPanel {
         }
     }
 
+    //Поток для ожидания хода противника
     private void waitEnemyTurn() throws IOException, ClassNotFoundException {
         new Thread(() -> {
             while (true) {
@@ -467,6 +471,7 @@ public class BattleFieldComponent extends JPanel {
         this.turnLabel = turnLabel;
     }
 
+    //По координатам клика получить ячейку
     private Cell getClickedPane(MouseEvent e) {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
@@ -479,6 +484,7 @@ public class BattleFieldComponent extends JPanel {
         return null;
     }
 
+    //Получить координату Х
     private int getI(MouseEvent e) {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
@@ -491,6 +497,7 @@ public class BattleFieldComponent extends JPanel {
         return 500;
     }
 
+    //Получить координату У
     private int getJ(MouseEvent e) {
         int x = e.getX() - cells[0][0].getX();
         int y = e.getY() - cells[0][0].getY();
@@ -503,6 +510,7 @@ public class BattleFieldComponent extends JPanel {
         return 500;
     }
 
+    //Можно ли разместить здесь корабль
     private boolean checkPaintPane(int x, int y) {
         if (x == 0 && y == 0) {
             if (gm.map1[x + 1][y + 1] == 0 && gm.map1[x + 1][y] == 0 && gm.map1[x][y + 1] == 0) {
@@ -818,6 +826,7 @@ public class BattleFieldComponent extends JPanel {
         return false;
     }
 
+    //Красит в красный, если кораблей больше чем нужно
     private void paintShipsRed() {
         for (int y = 0; y < gm.MAP_WIDTH; y++) {
             for (int x = 0; x < gm.MAP_WIDTH; x++) {
@@ -1109,6 +1118,7 @@ public class BattleFieldComponent extends JPanel {
         }
     }
 
+    //Красит в черный, если нужное колличество
     private void paintAllBlack() {
         for (int y = 0; y < gm.MAP_WIDTH; y++) {
             for (int x = 0; x < gm.MAP_WIDTH; x++) {
@@ -1119,6 +1129,8 @@ public class BattleFieldComponent extends JPanel {
         }
     }
 
+    //Красит поле в зависимости от того, что на нем находится
+    //0 - пусто, 1 - корабль, 2 - попадание мимо, 3 - попадание в корабль
     private void paintMap(int[][] map, Cell[][] cell) {
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
