@@ -25,7 +25,6 @@ public class GameMap implements Serializable{
         map2 = new int[MAP_WIDTH][MAP_WIDTH];;
     }
 
-    //Подсчет всех кораблей
     public void checkShips() {
         singleDeck = 0;
         twoDeck = 0;
@@ -176,7 +175,6 @@ public class GameMap implements Serializable{
         }
     }
 
-    //Проверка на соответствие колличества кораблей
     public boolean readyShips() {
         return (singleDeck == 4 && twoDeck == 3 && threeDeck == 2 && fourDeck == 1);
     }

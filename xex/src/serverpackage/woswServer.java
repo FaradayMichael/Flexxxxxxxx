@@ -15,7 +15,6 @@ import wosw.GameMap;
  */
 public class woswServer {
 
-    //Поля игроков
     private static int[][] mapPlayer1;
     private static int[][] mapPlayer2;
 
@@ -27,7 +26,6 @@ public class woswServer {
         ServerSocket ss = new ServerSocket(port);
 
 
-        //1
         Socket socket1 = ss.accept();
         System.out.println("Join1");
 
@@ -40,7 +38,6 @@ public class woswServer {
         System.out.println("Ready 1");
 
 
-        //2
         Socket socket2 = ss.accept();
         System.out.println("Join2");
 
@@ -63,20 +60,20 @@ public class woswServer {
         //1 - Ship
         //2 - Shot
         //3 - ShotInShip
-
         //4 - End game
+
         mapPlayer1 = gm1.map1;
         mapPlayer2 = gm2.map1;
 
         new Thread(() -> {
 
-            int numPlayerTurn = 1;//Чей ход
+            int numPlayerTurn = 1;
             while (true) {
                 int[] pos;
                 if (numPlayerTurn == 1) {
                     try {
-                        pos = (int[]) in1.readObject();//Получение координат выстрела
-                        if (mapPlayer2[pos[0]][pos[1]] == 1) {//Если попал
+                        pos = (int[]) in1.readObject();
+                        if (mapPlayer2[pos[0]][pos[1]] == 1) {
                             mapPlayer2[pos[0]][pos[1]] = 3;
                             if (isKill(pos[0], pos[1], mapPlayer2)) {
                                 if(gameIsEnd(mapPlayer2)){
@@ -92,7 +89,6 @@ public class woswServer {
                                     out2.flush();
                                     mapPlayer2 = aroundDead(pos[0], pos[1], mapPlayer2);
                                 }
-
                             } else {
                                 out1.writeInt(1);
                                 out1.flush();
@@ -101,7 +97,7 @@ public class woswServer {
                             }
                             out2.writeObject(pos);
                             out2.flush();
-                        } else {//Если не попал
+                        } else {
                             mapPlayer2[pos[0]][pos[1]] = 2;
                             numPlayerTurn = 2;
                             out1.writeInt(0);
@@ -155,7 +151,6 @@ public class woswServer {
 
     }
 
-    //Расстановка точек вокруг убитого корабля
     private static int[][] aroundDead(int x, int y, int[][] map) {
         try {
             if (map[x + 1][y] == 3) {
@@ -389,7 +384,6 @@ public class woswServer {
         return map;
     }
 
-    //Попадание убило?
     private static boolean isKill(int x, int y, int[][] map) {
         boolean f1;
         boolean f2;
@@ -519,7 +513,6 @@ public class woswServer {
         return true;
     }
 
-    //Игра закончена
     private static boolean gameIsEnd(int[][] map){
         for (int i = 0; i<10; i++){
             for(int j = 0; j<10;j++){

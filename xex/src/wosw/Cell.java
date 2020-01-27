@@ -37,7 +37,6 @@ public class Cell extends JPanel {
         yOval = height / 2 - heightOval / 2;
     }
 
-    //Отрисовка точки
     public void paintShot() {
         Graphics g = getGraphics();
         g.setColor(Color.DARK_GRAY);
